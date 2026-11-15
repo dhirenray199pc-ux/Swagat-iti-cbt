@@ -439,11 +439,11 @@
         <div class="grid-2">
           <div class="form-group">
             <label>Trainee Full Name *</label>
-            <input type="text" id="stuName" placeholder="e.g. Dhiren Rai" required />
+            <input type="text" id="stuName" placeholder="e.g. Rajesh Kumar Sahu" required />
           </div>
           <div class="form-group">
             <label>NCVT Roll Number *</label>
-            <input type="text" id="stuRoll" placeholder="e.g. R170821030183" required style="text-transform:uppercase; font-family:'JetBrains Mono', monospace;" />
+            <input type="text" id="stuRoll" placeholder="e.g. R240821012345" required style="text-transform:uppercase; font-family:'JetBrains Mono', monospace;" />
           </div>
           <div class="form-group">
             <label>Trade *</label>
@@ -479,9 +479,8 @@
           </div>
           <div class="form-group">
             <label>Preferred Question Language</label>
-            <select id="stuLang">
-              <option value="en">English Only</option>
-              <option value="bi">Bilingual (English + Odia)</option>
+            <select id="stuLang" disabled style="background:#eef5ff; color:#0052cc; font-weight:600;">
+              <option value="en" selected>English Only</option>
             </select>
           </div>
         </div>
@@ -491,7 +490,7 @@
           <ul style="margin-left:18px; margin-top:4px;">
             <li>Questions & options are uniquely shuffled for every trainee.</li>
             <li>Do NOT switch tabs, minimize browser, or open split-screen. <strong>3 warnings = Auto-Submit!</strong></li>
-            <li>Only <strong>1 attempt per Roll Number</strong> is permitted per month.</li>
+            <li>All questions are displayed in standard NCVT English pattern.</li>
           </ul>
         </div>
 
@@ -509,7 +508,7 @@
           <div style="font-size:0.78rem; opacity:0.9;" id="dispTradeYear">Fitter • 2nd Year • November 2026</div>
         </div>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-          <button class="btn btn-sm" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.4);" onclick="toggleExamLang()">🌐 Switch EN / ଓଡ଼ିଆ</button>
+          <div class="badge" style="background:rgba(255,255,255,0.22); color:#fff; border:1px solid rgba(255,255,255,0.4);">Language: English</div>
           <div class="badge" style="background:#fef3c7; color:#92400e;" id="warningBadge">Warnings: 0/3</div>
           <div class="timer-box" id="examTimer">60:00</div>
         </div>
@@ -517,10 +516,10 @@
 
       <!-- Subject Tabs -->
       <div class="subject-tabs" id="subjectTabs">
-        <button class="sub-tab active" onclick="filterBySubject('ALL')">All Subjects</button>
-        <button class="sub-tab" onclick="filterBySubject('Trade Theory')">Trade Theory</button>
-        <button class="sub-tab" onclick="filterBySubject('WCS')">Workshop Calc & Science</button>
-        <button class="sub-tab" onclick="filterBySubject('Employability Skills')">Employability Skills</button>
+        <button class="sub-tab active" onclick="filterBySubject('ALL', this)">All Subjects</button>
+        <button class="sub-tab" onclick="filterBySubject('Trade Theory', this)">Trade Theory</button>
+        <button class="sub-tab" onclick="filterBySubject('WCS', this)">Workshop Calc & Science</button>
+        <button class="sub-tab" onclick="filterBySubject('Employability Skills', this)">Employability Skills</button>
       </div>
 
       <div class="exam-layout">
@@ -528,7 +527,7 @@
         <div class="card" style="margin-bottom:0;">
           <div class="q-meta">
             <span class="badge" id="qSubjectBadge">Trade Theory</span>
-            <span style="font-size:0.82rem; font-weight:700; color:#475569;" id="qCounter">Question 1 of 25</span>
+            <span style="font-size:0.82rem; font-weight:700; color:#475569;" id="qCounter">Question 1 of 6</span>
           </div>
 
           <div class="q-text" id="qTextDisplay">Loading question...</div>
@@ -754,14 +753,14 @@
             <div class="form-group">
               <label>Upload Bulk Questions via CSV File</label>
               <input type="file" id="csvQuestionUpload" accept=".csv" onchange="handleCSVQuestionUpload(event)" />
-              <small style="color:#64748b; font-size:0.74rem;">Format: Subject,Question_EN,Question_OD,OptA,OptB,OptC,OptD,CorrectIndex(0-3)</small>
+              <small style="color:#64748b; font-size:0.74rem;">Format: Subject,Question_EN,OptA,OptB,OptC,OptD,CorrectIndex(0-3)</small>
             </div>
           </div>
 
-          <!-- Bulk AI JSON/Text Paste -->
+          <!-- Bulk AI Text Paste -->
           <div class="form-group" style="margin-bottom:14px;">
-            <label>Bulk AI Question Paste (Format: Subject | Question EN | Question OD (Optional) | Opt A | Opt B | Opt C | Opt D | Correct Option A/B/C/D)</label>
-            <textarea id="bulkPasteBox" rows="5" placeholder="Trade Theory | What is the least count of a Vernier Caliper? | ଭର୍ନିୟର କ୍ୟାଲିପରର ସର୍ବନିମ୍ନ ମାପ କେତେ? | 0.01 mm | 0.02 mm | 0.05 mm | 0.10 mm | B"></textarea>
+            <label>Bulk AI Question Paste (Format: Subject | Question | Opt A | Opt B | Opt C | Opt D | Correct Option A/B/C/D)</label>
+            <textarea id="bulkPasteBox" rows="5" placeholder="Trade Theory | What is the least count of a Vernier Caliper? | 0.01 mm | 0.02 mm | 0.05 mm | 0.10 mm | B"></textarea>
             <div style="display:flex; gap:8px; margin-top:8px;">
               <button class="btn btn-primary btn-sm" onclick="importBulkQuestions()">+ Add Bulk Questions</button>
               <button class="btn btn-outline btn-sm" onclick="resetDefaultQuestions()">Reset Default NCVT Bank</button>
@@ -820,31 +819,31 @@
   </div>
 
   <script>
-    // ==================== DEFAULT BILINGUAL NCVT QUESTION BANKS ====================
+    // ==================== DEFAULT ENGLISH NCVT QUESTION BANKS ====================
     const DEFAULT_QUESTIONS = {
       "1st Year": [
-        { subject: "Trade Theory", en: "What is the least count of a Metric Outside Micrometer?", od: "ମେଟ୍ରିକ୍ ଆଉଟସାଇଡ୍ ମାଇକ୍ରୋମିଟରର ସର୍ବନିମ୍ନ ମାପ (Least Count) କେତେ?", opts: ["0.01 mm", "0.02 mm", "0.05 mm", "0.10 mm"], ans: 0 },
-        { subject: "Trade Theory", en: "Which file is used for filing narrow grooves and angles above 10°?", od: "୧୦ ଡିଗ୍ରୀରୁ ଅଧିକ କୋଣ ଏବଂ ସରୁ ଖାଲ ଫାଇଲ୍ କରିବା ପାଇଁ କେଉଁ ଫାଇଲ୍ ବ୍ୟବହୃତ ହୁଏ?", opts: ["Square file", "Half round file", "Triangular file", "Knife edge file"], ans: 3 },
-        { subject: "Trade Theory", en: "What is the standard point angle of a general purpose twist drill?", od: "ସାଧାରଣ କାର୍ଯ୍ୟ ପାଇଁ ବ୍ୟବହୃତ ଟ୍ୱିଷ୍ଟ ଡ୍ରିଲର ପଏଣ୍ଟ ଆଙ୍ଗଲ୍ କେତେ?", opts: ["90°", "118°", "135°", "60°"], ans: 1 },
-        { subject: "WCS", en: "What is the value of 1 Inch in millimeters?", od: "୧ ଇଞ୍ଚ କେତେ ମିଲିମିଟର ସହ ସମାନ?", opts: ["2.54 mm", "25.4 mm", "254 mm", "0.254 mm"], ans: 1 },
-        { subject: "WCS", en: "What is the SI unit of Force?", od: "ବଳ (Force) ର SI ଏକକ କ’ଣ?", opts: ["Joule", "Watt", "Newton", "Pascal"], ans: 2 },
-        { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", od: "କମ୍ପ୍ୟୁଟରରେ ସିଲେକ୍ଟ ହୋଇଥିବା ଟେକ୍ସଟ୍ କପି କରିବା ପାଇଁ କେଉଁ ସର୍ଟକଟ୍ କି ବ୍ୟବହୃତ ହୁଏ?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
+        { subject: "Trade Theory", en: "What is the least count of a Metric Outside Micrometer?", opts: ["0.01 mm", "0.02 mm", "0.05 mm", "0.10 mm"], ans: 0 },
+        { subject: "Trade Theory", en: "Which file is used for filing narrow grooves and angles above 10°?", opts: ["Square file", "Half round file", "Triangular file", "Knife edge file"], ans: 3 },
+        { subject: "Trade Theory", en: "What is the standard point angle of a general purpose twist drill?", opts: ["90°", "118°", "135°", "60°"], ans: 1 },
+        { subject: "WCS", en: "What is the value of 1 Inch in millimeters?", opts: ["2.54 mm", "25.4 mm", "254 mm", "0.254 mm"], ans: 1 },
+        { subject: "WCS", en: "What is the SI unit of Force?", opts: ["Joule", "Watt", "Newton", "Pascal"], ans: 2 },
+        { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
       ],
       "2nd Year": [
-        { subject: "Trade Theory", en: "Which bearing is designed to take axial thrust load as well as radial load?", od: "କେଉଁ ବିୟରିଂ ଉଭୟ ଆକ୍ସିଆଲ୍ ଥ୍ରଷ୍ଟ ଲୋଡ୍ ଏବଂ ରେଡିଆଲ୍ ଲୋଡ୍ ନେବା ପାଇଁ ତିଆରି ହୋଇଛି?", opts: ["Deep groove ball bearing", "Taper roller bearing", "Needle bearing", "Thrust ball bearing"], ans: 1 },
-        { subject: "Trade Theory", en: "What is the purpose of a keyway cut on a shaft?", od: "ଶାଫ୍ଟ ଉପରେ କି-ୱେ (Keyway) କାଟିବାର ଉଦ୍ଦେଶ୍ୟ କ’ଣ?", opts: ["Reduce weight", "Prevent relative rotation between shaft and hub", "Improve lubrication", "Increase speed"], ans: 1 },
-        { subject: "Trade Theory", en: "Which heat treatment process increases wear resistance on the surface of low carbon steel?", od: "କେଉଁ ହିଟ୍ ଟ୍ରିଟମେଣ୍ଟ ପ୍ରକ୍ରିୟା ଲୋ କାର୍ବନ ଷ୍ଟିଲର ଉପରିଭାଗକୁ କଠିନ କରେ?", opts: ["Annealing", "Normalizing", "Case Hardening", "Tempering"], ans: 2 },
-        { subject: "WCS", en: "What is the formula for Kinetic Energy?", od: "ଗତିଜ ଶକ୍ତି (Kinetic Energy) ର ସୂତ୍ର କ’ଣ?", opts: ["mgh", "1/2 mv²", "mv", "F × d"], ans: 1 },
-        { subject: "WCS", en: "If the diameter of a circle is 14 cm, what is its area? (π = 22/7)", od: "ଯଦି ଏକ ବୃତ୍ତର ବ୍ୟାସ ୧୪ ସେ.ମି. ହୁଏ, ତେବେ ଏହାର କ୍ଷେତ୍ରଫଳ କେତେ?", opts: ["154 cm²", "44 cm²", "616 cm²", "88 cm²"], ans: 0 },
-        { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", od: "ଉଦ୍ୟୋଗିତାରେ 'SWOT' ର ପୂର୍ଣ୍ଣ ରୂପ କ’ଣ?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
+        { subject: "Trade Theory", en: "Which bearing is designed to take axial thrust load as well as radial load?", opts: ["Deep groove ball bearing", "Taper roller bearing", "Needle bearing", "Thrust ball bearing"], ans: 1 },
+        { subject: "Trade Theory", en: "What is the purpose of a keyway cut on a shaft?", opts: ["Reduce weight", "Prevent relative rotation between shaft and hub", "Improve lubrication", "Increase speed"], ans: 1 },
+        { subject: "Trade Theory", en: "Which heat treatment process increases wear resistance on the surface of low carbon steel?", opts: ["Annealing", "Normalizing", "Case Hardening", "Tempering"], ans: 2 },
+        { subject: "WCS", en: "What is the formula for Kinetic Energy?", opts: ["mgh", "1/2 mv²", "mv", "F × d"], ans: 1 },
+        { subject: "WCS", en: "If the diameter of a circle is 14 cm, what is its area? (π = 22/7)", opts: ["154 cm²", "44 cm²", "616 cm²", "88 cm²"], ans: 0 },
+        { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
       ]
     };
 
     // ==================== STATE & STORAGE ====================
     const INSTRUCTOR_PIN = "Swagat@2008";
-    let questionBanks = JSON.parse(localStorage.getItem("swagat_qb_v2")) || DEFAULT_QUESTIONS;
-    let resultsData = JSON.parse(localStorage.getItem("swagat_results_v2")) || [];
-    let portalSettings = JSON.parse(localStorage.getItem("swagat_settings_v2")) || {
+    let questionBanks = JSON.parse(localStorage.getItem("swagat_qb_v3")) || DEFAULT_QUESTIONS;
+    let resultsData = JSON.parse(localStorage.getItem("swagat_results_v3")) || [];
+    let portalSettings = JSON.parse(localStorage.getItem("swagat_settings_v3")) || {
       examLive: true,
       showKey: true,
       duration: 60,
@@ -890,7 +889,7 @@
       portalSettings.showKey = document.getElementById("toggleShowKey").checked;
       portalSettings.duration = parseInt(document.getElementById("settingDuration").value) || 60;
       portalSettings.firebaseUrl = document.getElementById("firebaseDbUrl").value.trim().replace(/\/$/, "");
-      localStorage.setItem("swagat_settings_v2", JSON.stringify(portalSettings));
+      localStorage.setItem("swagat_settings_v3", JSON.stringify(portalSettings));
       applySettingsToUI();
       syncFromCloud();
     }
@@ -918,7 +917,7 @@
         const data = await res.json();
         if (data) {
           resultsData = Object.values(data);
-          localStorage.setItem("swagat_results_v2", JSON.stringify(resultsData));
+          localStorage.setItem("swagat_results_v3", JSON.stringify(resultsData));
         }
         statusEl.textContent = "CLOUD LIVE";
         renderResultsTable();
@@ -958,7 +957,6 @@
       const trade = document.getElementById("stuTrade").value;
       const year = document.getElementById("stuYear").value;
       const month = document.getElementById("stuMonth").value;
-      const lang = document.getElementById("stuLang").value;
 
       const rawBank = questionBanks[year] || [];
       if (rawBank.length === 0) {
@@ -974,16 +972,15 @@
           qIndex: idx,
           subject: q.subject,
           en: q.en,
-          od: q.od || "",
           opts: mixedOpts.map(o => o.text),
           correctIdx: mixedOpts.findIndex(o => o.isCorrect),
           userAns: null,
-          status: "not-visited" // not-visited | not-answered | answered | review
+          status: "not-visited"
         };
       });
 
       currentExam = {
-        name, roll, trade, year, month, lang,
+        name, roll, trade, year, month,
         questions: shuffledQs,
         filteredIndices: shuffledQs.map((_, i) => i),
         currentPos: 0,
@@ -995,6 +992,10 @@
       document.getElementById("dispStudentInfo").textContent = `${name} • ${roll}`;
       document.getElementById("dispTradeYear").textContent = `${trade} • ${year} • ${month} 2026`;
       document.getElementById("warningBadge").textContent = "Warnings: 0/3";
+
+      document.querySelectorAll(".sub-tab").forEach((btn, i) => {
+        btn.classList.toggle("active", i === 0);
+      });
 
       showView("examView");
       renderQuestion();
@@ -1009,7 +1010,7 @@
         document.getElementById("warningBadge").textContent = `Warnings: ${currentExam.warnings}/3`;
         if (currentExam.warnings >= 3) {
           alert("MAXIMUM WARNINGS EXCEEDED! Your exam is being auto-submitted due to tab switching.");
-          finalizeExam(true);
+          finalizeExam();
         } else {
           alert(`ANTI-CHEATING WARNING (${currentExam.warnings}/3): Do NOT switch tabs or minimize the browser during the exam!`);
         }
@@ -1028,39 +1029,38 @@
         if (currentExam.secondsLeft <= 0) {
           clearInterval(timerInterval);
           alert("Time is up! Submitting your exam automatically.");
-          finalizeExam(true);
+          finalizeExam();
         }
       }, 1000);
     }
 
-    function toggleExamLang() {
+    function filterBySubject(sub, btnEl) {
       if (!currentExam) return;
-      currentExam.lang = currentExam.lang === "en" ? "bi" : "en";
-      renderQuestion();
-    }
-
-    function filterBySubject(sub) {
-      document.querySelectorAll(".sub-tab").forEach(btn => btn.classList.remove("active"));
-      event.target.classList.add("active");
-
+      let matchingIndices = [];
       if (sub === "ALL") {
-        currentExam.filteredIndices = currentExam.questions.map((_, i) => i);
+        matchingIndices = currentExam.questions.map((_, i) => i);
       } else {
-        currentExam.filteredIndices = currentExam.questions
+        matchingIndices = currentExam.questions
           .map((q, i) => (q.subject === sub ? i : -1))
           .filter(i => i !== -1);
       }
-      if (currentExam.filteredIndices.length > 0) {
-        currentExam.currentPos = 0;
-        const realIdx = currentExam.filteredIndices[0];
-        if (currentExam.questions[realIdx].status === "not-visited") {
-          currentExam.questions[realIdx].status = "not-answered";
-        }
-        renderQuestion();
-        renderPalette();
-      } else {
-        alert("No questions in this subject section.");
+
+      if (matchingIndices.length === 0) {
+        alert("No questions available in this subject section.");
+        return;
       }
+
+      document.querySelectorAll(".sub-tab").forEach(btn => btn.classList.remove("active"));
+      if (btnEl) btnEl.classList.add("active");
+
+      currentExam.filteredIndices = matchingIndices;
+      currentExam.currentPos = 0;
+      const realIdx = currentExam.filteredIndices[0];
+      if (currentExam.questions[realIdx].status === "not-visited") {
+        currentExam.questions[realIdx].status = "not-answered";
+      }
+      renderQuestion();
+      renderPalette();
     }
 
     function renderQuestion() {
@@ -1069,12 +1069,7 @@
 
       document.getElementById("qSubjectBadge").textContent = q.subject;
       document.getElementById("qCounter").textContent = `Question ${realIdx + 1} of ${currentExam.questions.length}`;
-
-      let qHtml = `<div>${q.en}</div>`;
-      if (currentExam.lang === "bi" && q.od) {
-        qHtml += `<div style="margin-top:8px; color:#0052cc; font-size:0.95rem;">${q.od}</div>`;
-      }
-      document.getElementById("qTextDisplay").innerHTML = qHtml;
+      document.getElementById("qTextDisplay").textContent = q.en;
 
       const keys = ["A", "B", "C", "D"];
       const optBox = document.getElementById("optionsContainer");
@@ -1111,6 +1106,7 @@
       const q = currentExam.questions[realIdx];
       q.status = "review";
       nextQuestion();
+      renderPalette();
     }
 
     function nextQuestion() {
@@ -1140,6 +1136,7 @@
       } else {
         currentExam.filteredIndices = currentExam.questions.map((_, i) => i);
         currentExam.currentPos = realIdx;
+        document.querySelectorAll(".sub-tab").forEach((btn, i) => btn.classList.toggle("active", i === 0));
       }
       if (currentExam.questions[realIdx].status === "not-visited") {
         currentExam.questions[realIdx].status = "not-answered";
@@ -1165,11 +1162,11 @@
     function confirmSubmitExam() {
       const answeredCount = currentExam.questions.filter(q => q.userAns !== null).length;
       if (confirm(`You have answered ${answeredCount} out of ${currentExam.questions.length} questions. Submit final exam now?`)) {
-        finalizeExam(false);
+        finalizeExam();
       }
     }
 
-    function finalizeExam(autoSubmitted) {
+    function finalizeExam() {
       clearInterval(timerInterval);
       let correct = 0;
       const subStats = {
@@ -1209,7 +1206,7 @@
       };
 
       resultsData.unshift(record);
-      localStorage.setItem("swagat_results_v2", JSON.stringify(resultsData));
+      localStorage.setItem("swagat_results_v3", JSON.stringify(resultsData));
       pushResultToCloud(record);
 
       displayMarksheet(record);
@@ -1321,7 +1318,7 @@
       tbody.innerHTML = "";
 
       let passed = 0, sumPct = 0;
-      list.forEach((r, idx) => {
+      list.forEach(r => {
         if (r.passed) passed++;
         sumPct += r.percent;
 
@@ -1362,8 +1359,7 @@
       if (!list.length) { alert("No records to export."); return; }
       const headers = ["Date", "Roll No", "Trainee Name", "Trade", "Year", "Month", "Correct", "Total", "Percentage", "Status", "Warnings"];
       const rows = list.map(r => [r.date, r.roll, `"${r.name}"`, r.trade, r.year, r.month, r.correct, r.total, r.percent + "%", r.passed ? "PASS" : "FAIL", r.warnings || 0]);
-      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("
-");
+      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1375,7 +1371,7 @@
     function clearAllResults() {
       if (confirm("Are you sure you want to delete ALL saved results?")) {
         resultsData = [];
-        localStorage.setItem("swagat_results_v2", JSON.stringify([]));
+        localStorage.setItem("swagat_results_v3", JSON.stringify([]));
         renderResultsTable();
       }
     }
@@ -1403,7 +1399,7 @@
 
     function deleteQuestion(yr, idx) {
       questionBanks[yr].splice(idx, 1);
-      localStorage.setItem("swagat_qb_v2", JSON.stringify(questionBanks));
+      localStorage.setItem("swagat_qb_v3", JSON.stringify(questionBanks));
       renderQuestionList();
     }
 
@@ -1412,28 +1408,25 @@
       const raw = document.getElementById("bulkPasteBox").value.trim();
       if (!raw) return;
 
-      const lines = raw.split("
-");
+      const lines = raw.split("\n");
       const mapAns = { A: 0, B: 1, C: 2, D: 3 };
       let added = 0;
 
       lines.forEach(line => {
         const parts = line.split("|").map(s => s.trim());
         if (parts.length >= 7) {
-          const hasOdia = parts.length >= 8;
           const subject = parts[0] || "Trade Theory";
           const en = parts[1];
-          const od = hasOdia ? parts[2] : "";
-          const opts = hasOdia ? [parts[3], parts[4], parts[5], parts[6]] : [parts[2], parts[3], parts[4], parts[5]];
-          const ansChar = (hasOdia ? parts[7] : parts[6]).toUpperCase();
+          const opts = [parts[2], parts[3], parts[4], parts[5]];
+          const ansChar = parts[6].toUpperCase();
           const ans = mapAns[ansChar] !== undefined ? mapAns[ansChar] : 0;
 
-          questionBanks[yr].push({ subject, en, od, opts, ans });
+          questionBanks[yr].push({ subject, en, opts, ans });
           added++;
         }
       });
 
-      localStorage.setItem("swagat_qb_v2", JSON.stringify(questionBanks));
+      localStorage.setItem("swagat_qb_v3", JSON.stringify(questionBanks));
       document.getElementById("bulkPasteBox").value = "";
       renderQuestionList();
       alert(`${added} questions added to ${yr} bank!`);
@@ -1445,23 +1438,21 @@
       const yr = document.getElementById("qbYearSelect").value;
       const reader = new FileReader();
       reader.onload = function(e) {
-        const lines = e.target.result.split("
-").slice(1);
+        const lines = e.target.result.split("\n").slice(1);
         let count = 0;
         lines.forEach(line => {
           const cols = line.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
-          if (cols.length >= 8 && cols[1]) {
+          if (cols.length >= 7 && cols[1]) {
             questionBanks[yr].push({
               subject: cols[0] || "Trade Theory",
               en: cols[1],
-              od: cols[2] || "",
-              opts: [cols[3], cols[4], cols[5], cols[6]],
-              ans: parseInt(cols[7]) || 0
+              opts: [cols[2], cols[3], cols[4], cols[5]],
+              ans: parseInt(cols[6]) || 0
             });
             count++;
           }
         });
-        localStorage.setItem("swagat_qb_v2", JSON.stringify(questionBanks));
+        localStorage.setItem("swagat_qb_v3", JSON.stringify(questionBanks));
         renderQuestionList();
         alert(`Imported ${count} questions from CSV into ${yr}!`);
       };
@@ -1471,7 +1462,7 @@
     function resetDefaultQuestions() {
       if (confirm("Reset question banks to default NCVT questions?")) {
         questionBanks = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
-        localStorage.setItem("swagat_qb_v2", JSON.stringify(questionBanks));
+        localStorage.setItem("swagat_qb_v3", JSON.stringify(questionBanks));
         renderQuestionList();
       }
     }
