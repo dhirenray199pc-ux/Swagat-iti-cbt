@@ -742,12 +742,20 @@
 
         <!-- TAB B: QUESTION BANK MANAGER -->
         <div id="qbankTab" class="hidden">
-          <div class="grid-2" style="margin-bottom:16px;">
+          <div class="grid-3" style="margin-bottom:16px;">
             <div class="form-group">
-              <label>Select Target Year for Question Bank</label>
+              <label>Select Trade *</label>
+              <select id="qbTradeSelect" onchange="renderQuestionList()">
+                <option value="Fitter">Fitter</option>
+                <option value="Electrician">Electrician</option>
+                <option value="COPA">COPA</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Select Training Year *</label>
               <select id="qbYearSelect" onchange="renderQuestionList()">
-                <option value="1st Year">1st Year Question Bank</option>
-                <option value="2nd Year">2nd Year Question Bank</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
               </select>
             </div>
             <div class="form-group">
@@ -819,9 +827,9 @@
   </div>
 
   <script>
-    // ==================== DEFAULT ENGLISH NCVT QUESTION BANKS ====================
+    // ==================== DEFAULT ENGLISH NCVT QUESTION BANKS (TRADE + YEAR WISE) ====================
     const DEFAULT_QUESTIONS = {
-      "1st Year": [
+      "Fitter_1st Year": [
         { subject: "Trade Theory", en: "What is the least count of a Metric Outside Micrometer?", opts: ["0.01 mm", "0.02 mm", "0.05 mm", "0.10 mm"], ans: 0 },
         { subject: "Trade Theory", en: "Which file is used for filing narrow grooves and angles above 10°?", opts: ["Square file", "Half round file", "Triangular file", "Knife edge file"], ans: 3 },
         { subject: "Trade Theory", en: "What is the standard point angle of a general purpose twist drill?", opts: ["90°", "118°", "135°", "60°"], ans: 1 },
@@ -829,19 +837,42 @@
         { subject: "WCS", en: "What is the SI unit of Force?", opts: ["Joule", "Watt", "Newton", "Pascal"], ans: 2 },
         { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
       ],
-      "2nd Year": [
+      "Fitter_2nd Year": [
         { subject: "Trade Theory", en: "Which bearing is designed to take axial thrust load as well as radial load?", opts: ["Deep groove ball bearing", "Taper roller bearing", "Needle bearing", "Thrust ball bearing"], ans: 1 },
         { subject: "Trade Theory", en: "What is the purpose of a keyway cut on a shaft?", opts: ["Reduce weight", "Prevent relative rotation between shaft and hub", "Improve lubrication", "Increase speed"], ans: 1 },
         { subject: "Trade Theory", en: "Which heat treatment process increases wear resistance on the surface of low carbon steel?", opts: ["Annealing", "Normalizing", "Case Hardening", "Tempering"], ans: 2 },
         { subject: "WCS", en: "What is the formula for Kinetic Energy?", opts: ["mgh", "1/2 mv²", "mv", "F × d"], ans: 1 },
         { subject: "WCS", en: "If the diameter of a circle is 14 cm, what is its area? (π = 22/7)", opts: ["154 cm²", "44 cm²", "616 cm²", "88 cm²"], ans: 0 },
         { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
+      ],
+      "Electrician_1st Year": [
+        { subject: "Trade Theory", en: "What is the SI unit of electrical resistance?", opts: ["Volt", "Ampere", "Ohm", "Watt"], ans: 2 },
+        { subject: "Trade Theory", en: "Which fire extinguisher is used for electrical fires?", opts: ["Water filled", "Foam type", "Halon / CO2 type", "Soda acid"], ans: 2 },
+        { subject: "WCS", en: "What is the formula for Ohm's Law?", opts: ["V = I × R", "P = V / I", "R = V × I", "I = V × R"], ans: 0 },
+        { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
+      ],
+      "Electrician_2nd Year": [
+        { subject: "Trade Theory", en: "Which motor is preferred for high starting torque in traction work?", opts: ["DC Shunt Motor", "DC Series Motor", "Synchronous Motor", "Capacitor Start Motor"], ans: 1 },
+        { subject: "Trade Theory", en: "What is the working principle of a Transformer?", opts: ["Self Induction", "Mutual Induction", "Static Electricity", "Electrolysis"], ans: 1 },
+        { subject: "WCS", en: "What is the unit of frequency?", opts: ["Henry", "Farad", "Hertz", "Tesla"], ans: 2 },
+        { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
+      ],
+      "COPA_1st Year": [
+        { subject: "Trade Theory", en: "Which memory is volatile in nature?", opts: ["ROM", "Hard Disk", "RAM", "CD-ROM"], ans: 2 },
+        { subject: "Trade Theory", en: "What does HTML stand for?", opts: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyperlink Text Management Language", "Home Tool Markup Language"], ans: 0 },
+        { subject: "WCS", en: "1 Kilobyte (KB) is equal to how many bytes?", opts: ["1000 bytes", "1024 bytes", "512 bytes", "2048 bytes"], ans: 1 },
+        { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
+      ],
+      "COPA_2nd Year": [
+        { subject: "Trade Theory", en: "Which protocol is used to send emails?", opts: ["HTTP", "FTP", "SMTP", "SNMP"], ans: 2 },
+        { subject: "Trade Theory", en: "Which SQL command is used to retrieve data from a database?", opts: ["GET", "SELECT", "EXTRACT", "OPEN"], ans: 1 },
+        { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
       ]
     };
 
     // ==================== STATE & STORAGE ====================
     const INSTRUCTOR_PIN = "Swagat@2008";
-    let questionBanks = JSON.parse(localStorage.getItem("swagat_qb_v3")) || DEFAULT_QUESTIONS;
+    let questionBanks = JSON.parse(localStorage.getItem("swagat_qb_v4")) || DEFAULT_QUESTIONS;
     let resultsData = JSON.parse(localStorage.getItem("swagat_results_v3")) || [];
     let savedSettings = JSON.parse(localStorage.getItem("swagat_settings_v3")) || {};
     let portalSettings = {
@@ -959,9 +990,10 @@
       const year = document.getElementById("stuYear").value;
       const month = document.getElementById("stuMonth").value;
 
-      const rawBank = questionBanks[year] || [];
+      const bankKey = `${trade}_${year}`;
+      const rawBank = questionBanks[bankKey] || [];
       if (rawBank.length === 0) {
-        alert("No questions configured for " + year);
+        alert(`No questions configured for ${trade} (${year}). Please ask Instructor to add questions.`);
         return;
       }
 
@@ -1378,10 +1410,18 @@
     }
 
     // ==================== QUESTION BANK MANAGER ====================
-    function renderQuestionList() {
+    function getSelectedBankKey() {
+      const tr = document.getElementById("qbTradeSelect").value;
       const yr = document.getElementById("qbYearSelect").value;
-      const list = questionBanks[yr] || [];
-      document.getElementById("qbCount").textContent = list.length;
+      const key = `${tr}_${yr}`;
+      if (!questionBanks[key]) questionBanks[key] = [];
+      return key;
+    }
+
+    function renderQuestionList() {
+      const key = getSelectedBankKey();
+      const list = questionBanks[key] || [];
+      document.getElementById("qbCount").textContent = `${key.replace("_", " - ")}: ${list.length}`;
       const box = document.getElementById("qbListContainer");
       box.innerHTML = "";
 
@@ -1392,20 +1432,20 @@
               <span class="badge">${q.subject}</span> <strong>Q${idx + 1}:</strong> ${q.en}
               <div style="color:#059669; font-size:0.76rem; margin-top:2px;">Answer: ${q.opts[q.ans]}</div>
             </div>
-            <button class="btn btn-danger btn-sm" onclick="deleteQuestion('${yr}', ${idx})">Delete</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteQuestion('${key}', ${idx})">Delete</button>
           </div>
         `;
       });
     }
 
-    function deleteQuestion(yr, idx) {
-      questionBanks[yr].splice(idx, 1);
-      localStorage.setItem("swagat_qb_v3", JSON.stringify(questionBanks));
+    function deleteQuestion(key, idx) {
+      questionBanks[key].splice(idx, 1);
+      localStorage.setItem("swagat_qb_v4", JSON.stringify(questionBanks));
       renderQuestionList();
     }
 
     function importBulkQuestions() {
-      const yr = document.getElementById("qbYearSelect").value;
+      const key = getSelectedBankKey();
       const raw = document.getElementById("bulkPasteBox").value.trim();
       if (!raw) return;
 
@@ -1422,21 +1462,21 @@
           const ansChar = parts[6].toUpperCase();
           const ans = mapAns[ansChar] !== undefined ? mapAns[ansChar] : 0;
 
-          questionBanks[yr].push({ subject, en, opts, ans });
+          questionBanks[key].push({ subject, en, opts, ans });
           added++;
         }
       });
 
-      localStorage.setItem("swagat_qb_v3", JSON.stringify(questionBanks));
+      localStorage.setItem("swagat_qb_v4", JSON.stringify(questionBanks));
       document.getElementById("bulkPasteBox").value = "";
       renderQuestionList();
-      alert(`${added} questions added to ${yr} bank!`);
+      alert(`${added} questions added to ${key.replace("_", " ")} bank!`);
     }
 
     function handleCSVQuestionUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-      const yr = document.getElementById("qbYearSelect").value;
+      const key = getSelectedBankKey();
       const reader = new FileReader();
       reader.onload = function(e) {
         const lines = e.target.result.split("\n").slice(1);
@@ -1444,7 +1484,7 @@
         lines.forEach(line => {
           const cols = line.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
           if (cols.length >= 7 && cols[1]) {
-            questionBanks[yr].push({
+            questionBanks[key].push({
               subject: cols[0] || "Trade Theory",
               en: cols[1],
               opts: [cols[2], cols[3], cols[4], cols[5]],
@@ -1453,9 +1493,9 @@
             count++;
           }
         });
-        localStorage.setItem("swagat_qb_v3", JSON.stringify(questionBanks));
+        localStorage.setItem("swagat_qb_v4", JSON.stringify(questionBanks));
         renderQuestionList();
-        alert(`Imported ${count} questions from CSV into ${yr}!`);
+        alert(`Imported ${count} questions from CSV into ${key.replace("_", " ")}!`);
       };
       reader.readAsText(file);
     }
@@ -1463,7 +1503,7 @@
     function resetDefaultQuestions() {
       if (confirm("Reset question banks to default NCVT questions?")) {
         questionBanks = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
-        localStorage.setItem("swagat_qb_v3", JSON.stringify(questionBanks));
+        localStorage.setItem("swagat_qb_v4", JSON.stringify(questionBanks));
         renderQuestionList();
       }
     }
