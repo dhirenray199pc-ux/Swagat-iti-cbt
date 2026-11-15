@@ -1488,7 +1488,7 @@
       if (!list.length) { alert("No records to export."); return; }
       const headers = ["Date", "Roll No", "Trainee Name", "Trade", "Year", "Month", "Correct", "Total", "Percentage", "Status", "Warnings"];
       const rows = list.map(r => [r.date, r.roll, `"${r.name}"`, r.trade, r.year, r.month, r.correct, r.total, r.percent + "%", r.passed ? "PASS" : "FAIL", r.warnings || 0]);
-      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("\\n");
+      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1552,7 +1552,7 @@
       const raw = document.getElementById("bulkPasteBox").value.trim();
       if (!raw) return;
 
-      const lines = raw.split("\\n");
+      const lines = raw.split("\n");
       const mapAns = { A: 0, B: 1, C: 2, D: 3 };
       let added = 0;
 
@@ -1583,7 +1583,7 @@
       const key = getSelectedBankKey();
       const reader = new FileReader();
       reader.onload = function(e) {
-        const lines = e.target.result.split("\\n").slice(1);
+        const lines = e.target.result.split("\n").slice(1);
         let count = 0;
         lines.forEach(line => {
           const cols = line.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
