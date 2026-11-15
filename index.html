@@ -744,11 +744,12 @@
         <div id="qbankTab" class="hidden">
           <div class="grid-3" style="margin-bottom:16px;">
             <div class="form-group">
-              <label>Select Trade *</label>
+              <label>Target Trade (Common / Specific) *</label>
               <select id="qbTradeSelect" onchange="renderQuestionList()">
-                <option value="Fitter">Fitter</option>
-                <option value="Electrician">Electrician</option>
-                <option value="COPA">COPA</option>
+                <option value="ALL">All Trades (Common: WCS / ES / Combined)</option>
+                <option value="Fitter">Fitter Only</option>
+                <option value="Electrician">Electrician Only</option>
+                <option value="COPA">COPA Only</option>
               </select>
             </div>
             <div class="form-group">
@@ -827,52 +828,49 @@
   </div>
 
   <script>
-    // ==================== DEFAULT ENGLISH NCVT QUESTION BANKS (TRADE + YEAR WISE) ====================
+    // ==================== DEFAULT ENGLISH NCVT QUESTION BANKS (COMMON + TRADE + YEAR WISE) ====================
     const DEFAULT_QUESTIONS = {
-      "Fitter_1st Year": [
-        { subject: "Trade Theory", en: "What is the least count of a Metric Outside Micrometer?", opts: ["0.01 mm", "0.02 mm", "0.05 mm", "0.10 mm"], ans: 0 },
-        { subject: "Trade Theory", en: "Which file is used for filing narrow grooves and angles above 10°?", opts: ["Square file", "Half round file", "Triangular file", "Knife edge file"], ans: 3 },
-        { subject: "Trade Theory", en: "What is the standard point angle of a general purpose twist drill?", opts: ["90°", "118°", "135°", "60°"], ans: 1 },
+      "ALL_1st Year": [
         { subject: "WCS", en: "What is the value of 1 Inch in millimeters?", opts: ["2.54 mm", "25.4 mm", "254 mm", "0.254 mm"], ans: 1 },
         { subject: "WCS", en: "What is the SI unit of Force?", opts: ["Joule", "Watt", "Newton", "Pascal"], ans: 2 },
         { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
       ],
-      "Fitter_2nd Year": [
-        { subject: "Trade Theory", en: "Which bearing is designed to take axial thrust load as well as radial load?", opts: ["Deep groove ball bearing", "Taper roller bearing", "Needle bearing", "Thrust ball bearing"], ans: 1 },
-        { subject: "Trade Theory", en: "What is the purpose of a keyway cut on a shaft?", opts: ["Reduce weight", "Prevent relative rotation between shaft and hub", "Improve lubrication", "Increase speed"], ans: 1 },
-        { subject: "Trade Theory", en: "Which heat treatment process increases wear resistance on the surface of low carbon steel?", opts: ["Annealing", "Normalizing", "Case Hardening", "Tempering"], ans: 2 },
+      "ALL_2nd Year": [
         { subject: "WCS", en: "What is the formula for Kinetic Energy?", opts: ["mgh", "1/2 mv²", "mv", "F × d"], ans: 1 },
         { subject: "WCS", en: "If the diameter of a circle is 14 cm, what is its area? (π = 22/7)", opts: ["154 cm²", "44 cm²", "616 cm²", "88 cm²"], ans: 0 },
         { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
       ],
+      "Fitter_1st Year": [
+        { subject: "Trade Theory", en: "What is the least count of a Metric Outside Micrometer?", opts: ["0.01 mm", "0.02 mm", "0.05 mm", "0.10 mm"], ans: 0 },
+        { subject: "Trade Theory", en: "Which file is used for filing narrow grooves and angles above 10°?", opts: ["Square file", "Half round file", "Triangular file", "Knife edge file"], ans: 3 },
+        { subject: "Trade Theory", en: "What is the standard point angle of a general purpose twist drill?", opts: ["90°", "118°", "135°", "60°"], ans: 1 }
+      ],
+      "Fitter_2nd Year": [
+        { subject: "Trade Theory", en: "Which bearing is designed to take axial thrust load as well as radial load?", opts: ["Deep groove ball bearing", "Taper roller bearing", "Needle bearing", "Thrust ball bearing"], ans: 1 },
+        { subject: "Trade Theory", en: "What is the purpose of a keyway cut on a shaft?", opts: ["Reduce weight", "Prevent relative rotation between shaft and hub", "Improve lubrication", "Increase speed"], ans: 1 },
+        { subject: "Trade Theory", en: "Which heat treatment process increases wear resistance on the surface of low carbon steel?", opts: ["Annealing", "Normalizing", "Case Hardening", "Tempering"], ans: 2 }
+      ],
       "Electrician_1st Year": [
         { subject: "Trade Theory", en: "What is the SI unit of electrical resistance?", opts: ["Volt", "Ampere", "Ohm", "Watt"], ans: 2 },
-        { subject: "Trade Theory", en: "Which fire extinguisher is used for electrical fires?", opts: ["Water filled", "Foam type", "Halon / CO2 type", "Soda acid"], ans: 2 },
-        { subject: "WCS", en: "What is the formula for Ohm's Law?", opts: ["V = I × R", "P = V / I", "R = V × I", "I = V × R"], ans: 0 },
-        { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
+        { subject: "Trade Theory", en: "Which fire extinguisher is used for electrical fires?", opts: ["Water filled", "Foam type", "Halon / CO2 type", "Soda acid"], ans: 2 }
       ],
       "Electrician_2nd Year": [
         { subject: "Trade Theory", en: "Which motor is preferred for high starting torque in traction work?", opts: ["DC Shunt Motor", "DC Series Motor", "Synchronous Motor", "Capacitor Start Motor"], ans: 1 },
-        { subject: "Trade Theory", en: "What is the working principle of a Transformer?", opts: ["Self Induction", "Mutual Induction", "Static Electricity", "Electrolysis"], ans: 1 },
-        { subject: "WCS", en: "What is the unit of frequency?", opts: ["Henry", "Farad", "Hertz", "Tesla"], ans: 2 },
-        { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
+        { subject: "Trade Theory", en: "What is the working principle of a Transformer?", opts: ["Self Induction", "Mutual Induction", "Static Electricity", "Electrolysis"], ans: 1 }
       ],
       "COPA_1st Year": [
         { subject: "Trade Theory", en: "Which memory is volatile in nature?", opts: ["ROM", "Hard Disk", "RAM", "CD-ROM"], ans: 2 },
-        { subject: "Trade Theory", en: "What does HTML stand for?", opts: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyperlink Text Management Language", "Home Tool Markup Language"], ans: 0 },
-        { subject: "WCS", en: "1 Kilobyte (KB) is equal to how many bytes?", opts: ["1000 bytes", "1024 bytes", "512 bytes", "2048 bytes"], ans: 1 },
-        { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
+        { subject: "Trade Theory", en: "What does HTML stand for?", opts: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyperlink Text Management Language", "Home Tool Markup Language"], ans: 0 }
       ],
       "COPA_2nd Year": [
         { subject: "Trade Theory", en: "Which protocol is used to send emails?", opts: ["HTTP", "FTP", "SMTP", "SNMP"], ans: 2 },
-        { subject: "Trade Theory", en: "Which SQL command is used to retrieve data from a database?", opts: ["GET", "SELECT", "EXTRACT", "OPEN"], ans: 1 },
-        { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
+        { subject: "Trade Theory", en: "Which SQL command is used to retrieve data from a database?", opts: ["GET", "SELECT", "EXTRACT", "OPEN"], ans: 1 }
       ]
     };
 
     // ==================== STATE & STORAGE ====================
     const INSTRUCTOR_PIN = "Swagat@2008";
-    let questionBanks = JSON.parse(localStorage.getItem("swagat_qb_v4")) || DEFAULT_QUESTIONS;
+    let questionBanks = JSON.parse(localStorage.getItem("swagat_qb_v5")) || DEFAULT_QUESTIONS;
     let resultsData = JSON.parse(localStorage.getItem("swagat_results_v3")) || [];
     let savedSettings = JSON.parse(localStorage.getItem("swagat_settings_v3")) || {};
     let portalSettings = {
@@ -990,8 +988,9 @@
       const year = document.getElementById("stuYear").value;
       const month = document.getElementById("stuMonth").value;
 
-      const bankKey = `${trade}_${year}`;
-      const rawBank = questionBanks[bankKey] || [];
+      const commonBank = questionBanks[`ALL_${year}`] || [];
+      const specificBank = questionBanks[`${trade}_${year}`] || [];
+      const rawBank = [...commonBank, ...specificBank];
       if (rawBank.length === 0) {
         alert(`No questions configured for ${trade} (${year}). Please ask Instructor to add questions.`);
         return;
@@ -1421,7 +1420,8 @@
     function renderQuestionList() {
       const key = getSelectedBankKey();
       const list = questionBanks[key] || [];
-      document.getElementById("qbCount").textContent = `${key.replace("_", " - ")}: ${list.length}`;
+      const labelName = key.startsWith("ALL_") ? `All Trades Common (${key.split("_")[1]})` : `${key.replace("_", " - ")}`;
+      document.getElementById("qbCount").textContent = `${labelName} • ${list.length}`;
       const box = document.getElementById("qbListContainer");
       box.innerHTML = "";
 
@@ -1440,7 +1440,7 @@
 
     function deleteQuestion(key, idx) {
       questionBanks[key].splice(idx, 1);
-      localStorage.setItem("swagat_qb_v4", JSON.stringify(questionBanks));
+      localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
       renderQuestionList();
     }
 
@@ -1467,7 +1467,7 @@
         }
       });
 
-      localStorage.setItem("swagat_qb_v4", JSON.stringify(questionBanks));
+      localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
       document.getElementById("bulkPasteBox").value = "";
       renderQuestionList();
       alert(`${added} questions added to ${key.replace("_", " ")} bank!`);
@@ -1493,7 +1493,7 @@
             count++;
           }
         });
-        localStorage.setItem("swagat_qb_v4", JSON.stringify(questionBanks));
+        localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
         renderQuestionList();
         alert(`Imported ${count} questions from CSV into ${key.replace("_", " ")}!`);
       };
@@ -1503,7 +1503,7 @@
     function resetDefaultQuestions() {
       if (confirm("Reset question banks to default NCVT questions?")) {
         questionBanks = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
-        localStorage.setItem("swagat_qb_v4", JSON.stringify(questionBanks));
+        localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
         renderQuestionList();
       }
     }
