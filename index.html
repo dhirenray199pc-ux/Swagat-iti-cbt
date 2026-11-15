@@ -1,101 +1,463 @@
+
+
+Skip to content
+Using Gmail with screen readers
+Conversations
+1% of 15 GB used
+Terms · Privacy · Program Policies
+Last account activity: 5 hours ago
+Details
+swagat_iti_cbt_neon_final.txt
+100%
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Swagat ITI - Online CBT Examination Portal</title>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <!-- Firebase App & Realtime Database Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <style>
     :root {
-      --primary: #1e3a8a;
-      --primary-light: #2563eb;
-      --bg: #f1f5f9;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #cbd5e1;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --warning: #d97706;
+      --bg-dark: #070b14;
+      --bg-card: rgba(15, 23, 42, 0.78);
+      --bg-input: rgba(30, 41, 59, 0.85);
+      --neon-cyan: #00f5d4;
+      --neon-blue: #3b82f6;
+      --neon-purple: #a855f7;
+      --neon-pink: #ec4899;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glow: rgba(0, 245, 212, 0.28);
+      --border-subtle: rgba(148, 163, 184, 0.18);
+      --success: #10b981;
+      --danger: #ef4444;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background: var(--bg); color: var(--text); line-height: 1.5; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(0, 245, 212, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 20%, rgba(168, 85, 247, 0.14) 0%, transparent 42%),
+        radial-gradient(circle at 50% 90%, rgba(59, 130, 246, 0.12) 0%, transparent 45%);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Header */
     header {
-      background: var(--primary); color: #fff; padding: 14px 20px;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      background: rgba(10, 15, 28, 0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 25px rgba(0, 245, 212, 0.08);
     }
-    header h1 { font-size: 1.25rem; font-weight: 700; }
-    header small { display: block; font-size: 0.8rem; opacity: 0.85; }
+
+    .brand h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #00f5d4, #3b82f6, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand small {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
     .sync-badge {
-      font-size: 0.78rem; padding: 4px 10px; border-radius: 20px;
-      background: rgba(255,255,255,0.15); display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-subtle);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
     }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
-    .dot.offline { background: #f87171; }
-    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #00f5d4;
+      box-shadow: 0 0 10px #00f5d4, 0 0 20px #00f5d4;
+      animation: pulse 1.8s infinite;
+    }
+
+    .dot.offline {
+      background: #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.65; }
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 26px auto;
+      padding: 0 16px;
+    }
+
     .card {
-      background: var(--card); border-radius: 10px; padding: 22px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e2e8f0;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      padding: 26px;
+      border: 1px solid var(--border-glow);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      margin-bottom: 24px;
     }
-    h2 { font-size: 1.15rem; margin-bottom: 14px; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
-    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: #334155; }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+    }
+
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 20px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
+      box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--neon-cyan);
+      letter-spacing: 0.3px;
+    }
+
     input, select, textarea {
-      width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px;
-      font-size: 0.95rem; background: #fff;
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      font-size: 0.94rem;
+      background: var(--bg-input);
+      color: #fff;
+      transition: all 0.2s ease;
     }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-light); }
+
+    input::placeholder, textarea::placeholder { color: #64748b; }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 0 3px rgba(0, 245, 212, 0.15);
+    }
+
+    /* Buttons */
     .btn {
-      padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600;
-      cursor: pointer; font-size: 0.92rem; transition: 0.15s;
+      padding: 11px 20px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.92rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    .btn-primary { background: var(--primary-light); color: #fff; }
-    .btn-primary:hover { background: var(--primary); }
-    .btn-success { background: var(--success); color: #fff; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-outline { background: transparent; border: 1px solid #fff; color: #fff; padding: 6px 12px; font-size: 0.85rem; }
-    .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+
+    .btn-neon {
+      background: linear-gradient(135deg, #00f5d4 0%, #3b82f6 100%);
+      color: #041019;
+      box-shadow: 0 0 18px rgba(0, 245, 212, 0.35);
+    }
+
+    .btn-neon:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 26px rgba(0, 245, 212, 0.6);
+    }
+
+    .btn-purple {
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
+    }
+
+    .btn-purple:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 24px rgba(168, 85, 247, 0.6);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    .btn-danger:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: rgba(0, 245, 212, 0.08);
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      padding: 7px 14px;
+      font-size: 0.84rem;
+    }
+
+    .btn-outline:hover {
+      background: var(--neon-cyan);
+      color: #041019;
+      box-shadow: 0 0 15px rgba(0, 245, 212, 0.45);
+    }
+
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
     .hidden { display: none !important; }
 
     /* Exam UI */
     .exam-bar {
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-      background: #eff6ff; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #bfdbfe;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: rgba(30, 41, 59, 0.7);
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(59, 130, 246, 0.35);
     }
-    .timer { font-weight: 700; font-size: 1.1rem; color: var(--danger); }
-    .q-box { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #e2e8f0; }
-    .q-title { font-weight: 600; margin-bottom: 10px; font-size: 1rem; }
+
+    .timer {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #ff4d6d;
+      background: rgba(239, 68, 68, 0.12);
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      text-shadow: 0 0 8px rgba(255, 77, 109, 0.5);
+    }
+
+    .q-box {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .q-title {
+      font-weight: 600;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      color: #f1f5f9;
+    }
+
     .opt-label {
-      display: flex; align-items: center; gap: 10px; padding: 9px 12px;
-      border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px; cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      background: rgba(30, 41, 59, 0.45);
+      transition: all 0.15s ease;
     }
-    .opt-label:hover { background: #f8fafc; }
-    .opt-label input { width: auto; }
+
+    .opt-label:hover {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 245, 212, 0.08);
+    }
+
+    .opt-label input[type="radio"] {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--neon-cyan);
+    }
+
+    /* Stats Pills */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-box {
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+
+    .stat-box span {
+      display: block;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-box strong {
+      font-size: 1.35rem;
+      color: var(--neon-cyan);
+      font-family: 'JetBrains Mono', monospace;
+    }
 
     /* Table */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    th, td { padding: 10px; border: 1px solid #e2e8f0; text-align: left; }
-    th { background: #f8fafc; font-weight: 600; color: #334155; }
-    .badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
-    .badge-pass { background: #dcfce7; color: #166534; }
-    .badge-fail { background: #fee2e2; color: #991b1b; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .tab-btn { background: #e2e8f0; color: #334155; }
-    .tab-btn.active { background: var(--primary); color: #fff; }
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+    }
+
+    th {
+      background: rgba(30, 41, 59, 0.9);
+      font-weight: 700;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.5px;
+    }
+
+    tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    .badge-pass {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+
+    .badge-fail {
+      background: rgba(239, 68, 68, 0.18);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.45);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(0, 245, 212, 0.2), rgba(59, 130, 246, 0.25));
+      color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 14px rgba(0, 245, 212, 0.22);
+    }
+
+    .helper-box {
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px dashed rgba(168, 85, 247, 0.5);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: #e9d5ff;
+      margin-bottom: 12px;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--neon-cyan);
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <div>
+  <div class="brand">
     <h1>SWAGAT INDUSTRIAL TRAINING CENTRE</h1>
-    <small>Bhawanipatna, Kalahandi • Online CBT Assessment Portal</small>
+    <small>Bhawanipatna, Kalahandi • Next-Gen Live CBT Assessment Portal</small>
   </div>
-  <div style="display:flex; align-items:center; gap:10px;">
+  <div class="header-actions">
     <span class="sync-badge"><span id="syncDot" class="dot offline"></span> <span id="syncText">Connecting...</span></span>
     <button class="btn btn-outline" onclick="toggleInstructorModal()">Instructor Login</button>
   </div>
@@ -124,7 +486,7 @@
         </select>
       </div>
       <div>
-        <label>Year *</label>
+        <label>Academic Year *</label>
         <select id="stuYear">
           <option value="1st Year">1st Year</option>
           <option value="2nd Year">2nd Year</option>
@@ -145,8 +507,8 @@
         <input type="month" id="stuMonth" />
       </div>
     </div>
-    <div style="margin-top: 18px;">
-      <button class="btn btn-primary" onclick="startExam()">Start CBT Examination</button>
+    <div style="margin-top: 22px;">
+      <button class="btn btn-neon" onclick="startExam()">Start CBT Examination</button>
     </div>
   </div>
 
@@ -154,48 +516,49 @@
   <div id="examView" class="card hidden">
     <div class="exam-bar">
       <div>
-        <strong id="examHeaderInfo"></strong>
-        <div style="font-size:0.82rem; color:var(--muted);" id="examSubInfo"></div>
+        <strong id="examHeaderInfo" style="font-size:1.05rem; color:#fff;"></strong>
+        <div style="font-size:0.84rem; color:var(--neon-cyan);" id="examSubInfo"></div>
       </div>
-      <div class="timer">Time Left: <span id="timerDisplay">60:00</span></div>
+      <div class="timer">TIME LEFT: <span id="timerDisplay">60:00</span></div>
     </div>
     <div id="questionsContainer"></div>
-    <button class="btn btn-success" onclick="submitExam(false)">Submit Examination</button>
+    <button class="btn btn-success" onclick="submitExam(false)">Submit Final Examination</button>
   </div>
 
   <!-- 3. RESULT SUMMARY -->
   <div id="resultView" class="card hidden">
-    <h2>Examination Result Summary</h2>
-    <div id="resultDetails" style="margin-bottom: 16px;"></div>
-    <button class="btn btn-primary" onclick="resetToHome()">Back to Registration</button>
+    <h2>Examination Score Card</h2>
+    <div id="resultDetails" style="margin-bottom: 18px; line-height: 1.9;"></div>
+    <button class="btn btn-neon" onclick="resetToHome()">Back to Home</button>
   </div>
 
-  <!-- 4. INSTRUCTOR LOGIN BOX -->
-  <div id="pinModal" class="card hidden" style="max-width:400px; margin:20px auto;">
-    <h2>Instructor Portal Login</h2>
-    <label>Enter Instructor PIN</label>
-    <input type="password" id="instructorPinInput" placeholder="Enter PIN" />
-    <div style="margin-top:12px; display:flex; gap:10px;">
-      <button class="btn btn-primary" onclick="verifyPin()">Login</button>
-      <button class="btn" style="background:#e2e8f0;" onclick="toggleInstructorModal()">Cancel</button>
+  <!-- 4. INSTRUCTOR LOGIN MODAL -->
+  <div id="pinModal" class="card hidden" style="max-width:420px; margin:30px auto;">
+    <h2>Instructor Authentication</h2>
+    <label>Enter Security PIN</label>
+    <input type="password" id="instructorPinInput" placeholder="Enter PIN" onkeyup="if(event.key==='Enter') verifyPin()" />
+    <div style="margin-top:16px; display:flex; gap:10px;">
+      <button class="btn btn-neon" onclick="verifyPin()">Unlock Dashboard</button>
+      <button class="btn btn-danger" onclick="toggleInstructorModal()">Cancel</button>
     </div>
   </div>
 
   <!-- 5. INSTRUCTOR DASHBOARD -->
   <div id="instructorView" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
-      <h2 style="margin:0; border:none;">Instructor Control Panel (Live Cloud Sync)</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+      <h2 style="margin:0; border:none;">Instructor Control Center (Cloud Live)</h2>
       <button class="btn btn-danger btn-sm" onclick="logoutInstructor()">Exit Portal</button>
     </div>
 
     <div class="tabs">
       <button class="btn tab-btn active" id="tabResBtn" onclick="switchTab('results')">Live Marksheet & Results</button>
-      <button class="btn tab-btn" id="tabQBtn" onclick="switchTab('questions')">Year-Wise Question Bank</button>
+      <button class="btn tab-btn" id="tabBulkBtn" onclick="switchTab('bulk')">Bulk AI Question Paste</button>
+      <button class="btn tab-btn" id="tabSingleBtn" onclick="switchTab('single')">Single Question & Bank</button>
     </div>
 
     <!-- TAB A: LIVE RESULTS -->
     <div id="resultsTab">
-      <div class="grid" style="margin-bottom:14px;">
+      <div class="grid" style="margin-bottom:16px;">
         <div>
           <label>Filter by Trade</label>
           <select id="filterTrade" onchange="renderResultsTable()">
@@ -219,12 +582,12 @@
         </div>
       </div>
 
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
-        <button class="btn btn-success btn-sm" onclick="exportCSV()">Export Filtered CSV</button>
-        <button class="btn btn-danger btn-sm" onclick="clearAllResults()">Clear All Cloud Records</button>
-      </div>
+      <div class="stats-grid" id="statsSummary"></div>
 
-      <div id="statsSummary" style="margin-bottom:12px; font-weight:600; color:var(--primary);"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+        <button class="btn btn-neon btn-sm" onclick="exportCSV()">Export Filtered CSV</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAllResults()">Clear All Cloud Results</button>
+      </div>
 
       <div class="table-wrap">
         <table>
@@ -241,16 +604,66 @@
             </tr>
           </thead>
           <tbody id="resultsTableBody">
-            <tr><td colspan="8">Loading live results...</td></tr>
+            <tr><td colspan="8" style="text-align:center;">Syncing live results from cloud...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- TAB B: QUESTION MANAGER -->
-    <div id="questionsTab" class="hidden">
-      <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:18px;">
-        <h3 style="font-size:1rem; margin-bottom:10px;">Add New MCQ Question (Syncs to All Devices)</h3>
+    <!-- TAB B: BULK AI QUESTION PASTE -->
+    <div id="bulkTab" class="hidden">
+      <div class="helper-box">
+        <strong>Bulk AI Paste Guide (Syncs to All Student Phones Instantly):</strong><br/>
+        Aap AI se generated questions ko neeche diye gaye format mein paste karke ek click mein cloud par upload kar sakte hain:<br/><br/>
+        <strong>Format 1 (Simple Text Format):</strong><br/>
+        <code>Q: What is the full form of CPU? | A: Central Process Unit | B: Central Processing Unit | C: Control Unit | D: None | ANS: B</code><br/><br/>
+        <strong>Format 2 (JSON Array Format):</strong><br/>
+        <code>[{"q":"Question?","opts":["Opt A","Opt B","Opt C","Opt D"],"ans":0}]</code>
+      </div>
+
+      <div class="grid" style="margin-bottom:14px;">
+        <div>
+          <label>Assign to Year *</label>
+          <select id="bulkYear">
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+          </select>
+        </div>
+        <div>
+          <label>Assign to Trade *</label>
+          <select id="bulkTrade">
+            <option value="ALL">All Trades (Common / ES)</option>
+            <option value="Fitter">Fitter</option>
+            <option value="Electrician">Electrician</option>
+            <option value="COPA">COPA</option>
+          </select>
+        </div>
+        <div>
+          <label>Assign to Unit *</label>
+          <select id="bulkUnit">
+            <option value="ALL">All Units</option>
+            <option value="Unit 1">Unit 1</option>
+            <option value="Unit 2">Unit 2</option>
+            <option value="Unit 3">Unit 3</option>
+            <option value="Unit 4">Unit 4</option>
+            <option value="Unit 5">Unit 5</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Paste AI Questions Here (Text or JSON) *</label>
+      <textarea id="bulkInputArea" rows="10" placeholder="Q: What is HTML? | A: Hyper Text Markup Language | B: High Text Machine Language | C: Hyper Tabular Markup | D: None | ANS: A&#10;Q: Which tool is used for filing? | A: Hammer | B: File | C: Chisel | D: Punch | ANS: B"></textarea>
+
+      <div style="margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn btn-purple" onclick="uploadBulkQuestions()">Upload Bulk Questions to Cloud</button>
+        <button class="btn btn-outline" onclick="fillSampleBulk()">Load Sample Format</button>
+      </div>
+    </div>
+
+    <!-- TAB C: SINGLE QUESTION & MANAGE BANK -->
+    <div id="singleTab" class="hidden">
+      <div style="background:rgba(30,41,59,0.55); padding:18px; border-radius:12px; border:1px solid var(--border-subtle); margin-bottom:20px;">
+        <h3 style="font-size:1rem; margin-bottom:12px; color:var(--neon-cyan);">Add Single Question</h3>
         <div class="grid">
           <div>
             <label>Target Year *</label>
@@ -280,17 +693,17 @@
             </select>
           </div>
         </div>
-        <div style="margin-top:10px;">
+        <div style="margin-top:12px;">
           <label>Question Text *</label>
           <textarea id="qText" rows="2" placeholder="Enter question here..."></textarea>
         </div>
-        <div class="grid" style="margin-top:10px;">
+        <div class="grid" style="margin-top:12px;">
           <div><label>Option A *</label><input type="text" id="optA" /></div>
           <div><label>Option B *</label><input type="text" id="optB" /></div>
           <div><label>Option C *</label><input type="text" id="optC" /></div>
           <div><label>Option D *</label><input type="text" id="optD" /></div>
         </div>
-        <div style="margin-top:10px; max-width:220px;">
+        <div style="margin-top:12px; max-width:220px;">
           <label>Correct Answer *</label>
           <select id="qCorrect">
             <option value="0">Option A</option>
@@ -299,25 +712,28 @@
             <option value="3">Option D</option>
           </select>
         </div>
-        <button class="btn btn-primary" style="margin-top:12px;" onclick="addQuestionToCloud()">Save Question to Cloud</button>
+        <button class="btn btn-neon" style="margin-top:14px;" onclick="addQuestionToCloud()">Save Single Question</button>
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h3 style="font-size:1rem;">Saved Cloud Questions</h3>
-        <select id="viewQYearFilter" style="width:auto;" onchange="renderQuestionsList()">
-          <option value="ALL">Show All Years</option>
-          <option value="1st Year">1st Year Only</option>
-          <option value="2nd Year">2nd Year Only</option>
-        </select>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <h3 style="font-size:1rem; color:#fff;">Cloud Question Bank (<span id="qCountBadge">0</span>)</h3>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <select id="viewQYearFilter" style="width:auto;" onchange="renderQuestionsList()">
+            <option value="ALL">Show All Years</option>
+            <option value="1st Year">1st Year Only</option>
+            <option value="2nd Year">2nd Year Only</option>
+          </select>
+          <button class="btn btn-danger btn-sm" onclick="clearAllCloudQuestions()">Delete All Cloud Qs</button>
+        </div>
       </div>
-      <div id="cloudQuestionsList">Loading questions...</div>
+      <div id="cloudQuestionsList">Loading cloud questions...</div>
     </div>
   </div>
 
 </div>
 
 <script>
-  // Your Configured Swagat CBT Firebase Details
+  // Configured Swagat CBT Firebase Credentials
   const firebaseConfig = {
     apiKey: "AIzaSyAPILyIA7DKr0Kkq8Z_JXUZ-w3EyYacV2o",
     authDomain: "swagat-cbt.firebaseapp.com",
@@ -329,33 +745,52 @@
     measurementId: "G-Z67WLWJMV1"
   };
 
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Monitor Live Connection Status
+  // Live Connection Status
   db.ref(".info/connected").on("value", (snap) => {
     const dot = document.getElementById("syncDot");
     const txt = document.getElementById("syncText");
     if (snap.val() === true) {
       dot.classList.remove("offline");
-      txt.innerText = "Cloud Live";
+      txt.innerText = "CLOUD LIVE";
     } else {
       dot.classList.add("offline");
-      txt.innerText = "Offline";
+      txt.innerText = "OFFLINE";
     }
   });
 
-  // Default Fallback Questions (Used if cloud question bank is empty)
+  // 25 Built-in Employability Skills & ITI Questions (Fallback if cloud bank is empty)
   const defaultQuestions = [
-    { id: "def1", year: "1st Year", trade: "ALL", unit: "ALL", q: "Which shortcut key is used to copy selected text in Windows?", opts: ["Ctrl + X", "Ctrl + C", "Ctrl + V", "Ctrl + Z"], ans: 1 },
-    { id: "def2", year: "1st Year", trade: "ALL", unit: "ALL", q: "What is the full form of CPU?", opts: ["Central Process Unit", "Central Processing Unit", "Computer Personal Unit", "Control Processing Unit"], ans: 1 },
-    { id: "def3", year: "1st Year", trade: "Fitter", unit: "ALL", q: "Which file is used for removing large amounts of metal quickly?", opts: ["Smooth file", "Dead smooth file", "Bastard file", "Second cut file"], ans: 2 },
-    { id: "def4", year: "2nd Year", trade: "ALL", unit: "ALL", q: "What does SMART stand for in goal setting?", opts: ["Simple, Measurable, Active, Real, Time", "Specific, Measurable, Achievable, Relevant, Time-bound", "Standard, Modern, Accurate, Rapid, Timely", "Specific, Manageable, Aligned, Reliable, Tested"], ans: 1 },
-    { id: "def5", year: "2nd Year", trade: "Fitter", unit: "ALL", q: "Which bearing is designed to carry axial thrust load?", opts: ["Journal bearing", "Thrust bearing", "Needle bearing", "Split bearing"], ans: 1 }
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which shortcut key is used to copy selected text in Windows?", opts: ["Ctrl + X", "Ctrl + C", "Ctrl + V", "Ctrl + Z"], ans: 1 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "What is the full form of CPU?", opts: ["Central Process Unit", "Central Processing Unit", "Computer Personal Unit", "Control Processing Unit"], ans: 1 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which device is used to input printed text or images into a computer?", opts: ["Printer", "Monitor", "Scanner", "Speaker"], ans: 2 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "In MS Excel, every formula must start with which symbol?", opts: ["#", "@", "=", "&"], ans: 2 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "What does LAN stand for in computer networking?", opts: ["Large Area Network", "Local Area Network", "Logical Area Network", "Long Area Network"], ans: 1 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which key is used to permanently delete a file without sending it to Recycle Bin?", opts: ["Delete", "Ctrl + Delete", "Shift + Delete", "Alt + Delete"], ans: 2 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "What is the brain of any computer system?", opts: ["ALU", "Memory", "CPU", "Control Unit"], ans: 2 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which of the following is an example of an Operating System?", opts: ["MS Word", "Windows 11", "Google Chrome", "Adobe Reader"], ans: 1 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "What is the full form of PDF?", opts: ["Portable Document Format", "Printed Document File", "Public Data Format", "Personal Document File"], ans: 0 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which storage memory is volatile in nature?", opts: ["ROM", "Hard Disk", "RAM", "Pen Drive"], ans: 2 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Communication is a non-stop ________ process.", opts: ["Paper", "Two-way", "One-way", "Closed"], ans: 1 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which of the following is a barrier to effective communication?", opts: ["Active listening", "Noise and distraction", "Clear pronunciation", "Eye contact"], ans: 1 },
+    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Resume should be ________ and accurate.", opts: ["Long and detailed", "Short and precise", "Handwritten", "Colorful"], ans: 1 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "What does SMART stand for in goal setting?", opts: ["Simple, Measurable, Active, Real, Time", "Specific, Measurable, Achievable, Relevant, Time-bound", "Standard, Modern, Accurate, Rapid, Timely", "Specific, Manageable, Aligned, Reliable, Tested"], ans: 1 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which quality is most essential for an entrepreneur?", opts: ["Fear of failure", "Risk-taking ability", "Laziness", "Depending on others"], ans: 1 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "What is the full form of GST in India?", opts: ["General Sales Tax", "Goods and Services Tax", "Government Service Tax", "Gross Sales Tax"], ans: 1 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which portal is launched by Govt. of India for apprenticeship training?", opts: ["NAPS (apprenticeshipindia.gov.in)", "IRCTC", "UMANG", "SWAYAM"], ans: 0 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Kaizen refers to which workplace practice?", opts: ["Continuous improvement", "Annual audit", "Strict punishment", "Machine repair"], ans: 0 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "In 5S methodology, what does 'Seiri' mean?", opts: ["Shine", "Sort", "Sustain", "Standardize"], ans: 1 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which document is required to open a bank account or file income tax in India?", opts: ["Driving License", "PAN Card", "Ration Card", "Voter ID"], ans: 1 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "What does PPE stand for in industrial safety?", opts: ["Personal Protective Equipment", "Private Protective Engineering", "Public Protection Equipment", "Personal Power Equipment"], ans: 0 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which fire extinguisher is used for electrical fires?", opts: ["Water type", "Foam type", "CO2 / Dry Powder type", "Wet chemical"], ans: 2 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "What is the full form of MSME?", opts: ["Micro, Small and Medium Enterprises", "Medium, Small and Macro Enterprises", "Micro, Standard and Major Enterprises", "Mini, Small and Medium Enterprises"], ans: 0 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Feedback in communication helps the sender to know ________.", opts: ["Message was understood", "Time of day", "Sender's name", "Language name"], ans: 0 },
+    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which cloud service allows storing and sharing documents online via Google?", opts: ["Google Drive", "Windows Media Player", "Notepad", "Paint"], ans: 0 }
   ];
 
-  // Global Live State synced from Firebase
+  // Live Global State
   let liveQuestions = [];
   let liveResults = [];
   let activeExamQuestions = [];
@@ -363,12 +798,10 @@
   let timerInterval = null;
   let secondsLeft = 3600;
 
-  // Set default current month
-  const now = new Date();
-  const currentMonthStr = now.toISOString().slice(0, 7);
-  document.getElementById("stuMonth").value = currentMonthStr;
+  // Auto-set current month
+  document.getElementById("stuMonth").value = new Date().toISOString().slice(0, 7);
 
-  // Listen to Firebase Questions in Real-Time
+  // Sync Questions from Firebase
   db.ref("questions").on("value", (snapshot) => {
     const data = snapshot.val();
     liveQuestions = [];
@@ -380,7 +813,7 @@
     renderQuestionsList();
   });
 
-  // Listen to Firebase Results in Real-Time
+  // Sync Results from Firebase
   db.ref("results").on("value", (snapshot) => {
     const data = snapshot.val();
     liveResults = [];
@@ -389,12 +822,10 @@
         liveResults.push({ id: key, ...data[key] });
       });
     }
-    // Sort newest first
     liveResults.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     renderResultsTable();
   });
 
-  // Shuffle helper (Anti-cheating)
   function shuffleArray(arr) {
     const copy = [...arr];
     for (let i = copy.length - 1; i > 0; i--) {
@@ -414,7 +845,7 @@
     const month = document.getElementById("stuMonth").value;
 
     if (!name || !roll || !month) {
-      alert("Please fill Trainee Name, Roll Number, and Exam Month.");
+      alert("Please enter Trainee Name, Roll Number, and Exam Month.");
       return;
     }
 
@@ -432,7 +863,6 @@
       filtered = defaultQuestions;
     }
 
-    // Shuffle questions and shuffle options per question
     activeExamQuestions = shuffleArray(filtered).slice(0, 25).map((qObj) => {
       const correctText = qObj.opts[qObj.ans];
       const shuffledOpts = shuffleArray(qObj.opts);
@@ -444,8 +874,8 @@
 
     document.getElementById("regView").classList.add("hidden");
     document.getElementById("examView").classList.remove("hidden");
-    document.getElementById("examHeaderInfo").innerText = `${name} (${roll})`;
-    document.getElementById("examSubInfo").innerText = `${trade} • ${year} • ${unit} • ${month}`;
+    document.getElementById("examHeaderInfo").innerText = `${name} • Roll: ${roll}`;
+    document.getElementById("examSubInfo").innerText = `${trade} | ${year} | ${unit} | ${month}`;
 
     const container = document.getElementById("questionsContainer");
     container.innerHTML = "";
@@ -481,9 +911,9 @@
     }, 1000);
   }
 
-  // SUBMIT EXAM TO FIREBASE
+  // SUBMIT EXAM
   function submitExam(autoSubmit) {
-    if (!autoSubmit && !confirm("Are you sure you want to submit your exam?")) return;
+    if (!autoSubmit && !confirm("Submit your final examination answers?")) return;
     clearInterval(timerInterval);
 
     let score = 0;
@@ -508,21 +938,23 @@
       timestamp: Date.now()
     };
 
-    // Push directly to Firebase Cloud
     db.ref("results").push(resultRecord)
       .then(() => {
         document.getElementById("examView").classList.add("hidden");
         document.getElementById("resultView").classList.remove("hidden");
         document.getElementById("resultDetails").innerHTML = `
-          <p><strong>Trainee:</strong> ${resultRecord.name} (${resultRecord.roll})</p>
-          <p><strong>Trade / Year:</strong> ${resultRecord.trade} - ${resultRecord.year} (${resultRecord.unit})</p>
-          <p><strong>Marks Obtained:</strong> ${score} / ${total} (${percent}%)</p>
-          <p><strong>Result Status:</strong> <span class="badge ${status === 'PASS' ? 'badge-pass' : 'badge-fail'}">${status}</span></p>
-          <p style="color:var(--success); font-size:0.85rem; margin-top:8px;">✓ Result synced to Instructor Cloud Portal.</p>
+          <div style="background:rgba(30,41,59,0.65); padding:18px; border-radius:12px; border:1px solid var(--border-subtle);">
+            <p><strong>Trainee Name:</strong> ${resultRecord.name}</p>
+            <p><strong>Roll Number:</strong> ${resultRecord.roll}</p>
+            <p><strong>Trade & Year:</strong> ${resultRecord.trade} (${resultRecord.year} - ${resultRecord.unit})</p>
+            <p><strong>Marks Scored:</strong> <span style="color:var(--neon-cyan); font-size:1.15rem; font-weight:700;">${score} / ${total} (${percent}%)</span></p>
+            <p><strong>Final Status:</strong> <span class="badge ${status === 'PASS' ? 'badge-pass' : 'badge-fail'}">${status}</span></p>
+            <p style="color:#34d399; font-size:0.84rem; margin-top:10px;">Live synced to Swagat ITI Instructor Cloud Server.</p>
+          </div>
         `;
       })
       .catch((err) => {
-        alert("Error saving result to cloud. Please check internet connection: " + err.message);
+        alert("Cloud sync error: " + err.message);
       });
   }
 
@@ -531,16 +963,19 @@
     document.getElementById("regView").classList.remove("hidden");
   }
 
-  // INSTRUCTOR AUTH
+  // INSTRUCTOR AUTH (PIN: Swagat@2008)
   function toggleInstructorModal() {
     const modal = document.getElementById("pinModal");
     modal.classList.toggle("hidden");
     document.getElementById("instructorPinInput").value = "";
+    if (!modal.classList.contains("hidden")) {
+      document.getElementById("instructorPinInput").focus();
+    }
   }
 
   function verifyPin() {
     const pin = document.getElementById("instructorPinInput").value.trim();
-    if (pin === "Pridhi") {
+    if (pin === "Swagat@2008") {
       document.getElementById("pinModal").classList.add("hidden");
       document.getElementById("regView").classList.add("hidden");
       document.getElementById("examView").classList.add("hidden");
@@ -549,7 +984,7 @@
       renderResultsTable();
       renderQuestionsList();
     } else {
-      alert("Incorrect Instructor PIN!");
+      alert("Invalid Instructor Security PIN!");
     }
   }
 
@@ -560,12 +995,15 @@
 
   function switchTab(tab) {
     document.getElementById("resultsTab").classList.toggle("hidden", tab !== "results");
-    document.getElementById("questionsTab").classList.toggle("hidden", tab !== "questions");
+    document.getElementById("bulkTab").classList.toggle("hidden", tab !== "bulk");
+    document.getElementById("singleTab").classList.toggle("hidden", tab !== "single");
+
     document.getElementById("tabResBtn").classList.toggle("active", tab === "results");
-    document.getElementById("tabQBtn").classList.toggle("active", tab === "questions");
+    document.getElementById("tabBulkBtn").classList.toggle("active", tab === "bulk");
+    document.getElementById("tabSingleBtn").classList.toggle("active", tab === "single");
   }
 
-  // RENDER LIVE RESULTS TABLE
+  // RESULTS TABLE & STATS
   function getFilteredResults() {
     const fTrade = document.getElementById("filterTrade").value;
     const fYear = document.getElementById("filterYear").value;
@@ -582,30 +1020,37 @@
     const tbody = document.getElementById("resultsTableBody");
     const filtered = getFilteredResults();
 
+    const total = filtered.length;
     const passCount = filtered.filter(r => r.status === "PASS").length;
-    document.getElementById("statsSummary").innerText =
-      `Total Submissions: ${filtered.length} | Passed: ${passCount} | Failed: ${filtered.length - passCount}`;
+    const failCount = total - passCount;
+    const avgPct = total > 0 ? Math.round(filtered.reduce((acc, r) => acc + (r.percent || 0), 0) / total) : 0;
 
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No records found for selected filters.</td></tr>`;
+    document.getElementById("statsSummary").innerHTML = `
+      <div class="stat-box"><span>Total Attempts</span><strong>${total}</strong></div>
+      <div class="stat-box"><span>Passed</span><strong style="color:#34d399;">${passCount}</strong></div>
+      <div class="stat-box"><span>Failed</span><strong style="color:#f87171;">${failCount}</strong></div>
+      <div class="stat-box"><span>Avg Score</span><strong style="color:#a855f7;">${avgPct}%</strong></div>
+    `;
+
+    if (total === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No student submissions found for selected filters.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = filtered.map(r => `
       <tr>
         <td>${r.date || "-"}</td>
-        <td>${r.roll}</td>
+        <td><code>${r.roll}</code></td>
         <td><strong>${r.name}</strong></td>
         <td>${r.trade} (${r.year})</td>
-        <td>${r.unit} / ${r.month}</td>
-        <td>${r.score} / ${r.total}</td>
-        <td>${r.percent}%</td>
+        <td>${r.unit} • ${r.month}</td>
+        <td><strong>${r.score}</strong> / ${r.total}</td>
+        <td style="color:var(--neon-cyan); font-weight:700;">${r.percent}%</td>
         <td><span class="badge ${r.status === 'PASS' ? 'badge-pass' : 'badge-fail'}">${r.status}</span></td>
       </tr>
     `).join("");
   }
 
-  // EXPORT CSV
   function exportCSV() {
     const rows = getFilteredResults();
     if (rows.length === 0) {
@@ -619,17 +1064,109 @@
     const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `Swagat_ITI_CBT_Results_${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `Swagat_ITI_CBT_Marksheet_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
   }
 
   function clearAllResults() {
-    if (confirm("WARNING: This will permanently delete ALL student results from the cloud database. Continue?")) {
+    if (confirm("Delete ALL student results permanently from cloud?")) {
       db.ref("results").remove();
     }
   }
 
-  // QUESTION MANAGER (CLOUD)
+  // BULK AI QUESTION PARSER & CLOUD UPLOADER
+  function fillSampleBulk() {
+    document.getElementById("bulkInputArea").value =
+`Q: Which micrometer part ensures uniform measuring pressure? | A: Thimble | B: Ratchet stop | C: Spindle | D: Anvil | ANS: B
+Q: What is the least count of a standard metric Vernier Caliper? | A: 0.01 mm | B: 0.02 mm | C: 0.05 mm | D: 0.10 mm | ANS: B
+Q: Which file is used for finishing a job close to exact size? | A: Bastard file | B: Rough file | C: Smooth file | D: Rasp file | ANS: C`;
+  }
+
+  function uploadBulkQuestions() {
+    const raw = document.getElementById("bulkInputArea").value.trim();
+    const year = document.getElementById("bulkYear").value;
+    const trade = document.getElementById("bulkTrade").value;
+    const unit = document.getElementById("bulkUnit").value;
+
+    if (!raw) {
+      alert("Please paste questions in the box first.");
+      return;
+    }
+
+    let parsedList = [];
+
+    // Try JSON format first
+    if (raw.startsWith("[")) {
+      try {
+        const arr = JSON.parse(raw);
+        arr.forEach(item => {
+          if (item.q && Array.isArray(item.opts) && item.opts.length === 4 && typeof item.ans === "number") {
+            parsedList.push({
+              year: item.year || year,
+              trade: item.trade || trade,
+              unit: item.unit || unit,
+              q: String(item.q).trim(),
+              opts: item.opts.map(o => String(o).trim()),
+              ans: item.ans
+            });
+          }
+        });
+      } catch (e) {
+        alert("Invalid JSON format: " + e.message);
+        return;
+      }
+    } else {
+      // Pipe-separated line parser: Q: ... | A: ... | B: ... | C: ... | D: ... | ANS: A/B/C/D
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      const ansMap = { "A": 0, "B": 1, "C": 2, "D": 3, "0": 0, "1": 1, "2": 2, "3": 3 };
+
+      lines.forEach(line => {
+        const parts = line.split("|").map(p => p.trim());
+        if (parts.length >= 6) {
+          const qText = parts[0].replace(/^Q\d*[:.)-]\s*/i, "").trim();
+          const optA = parts[1].replace(/^A[:.)-]?\s*/i, "").trim();
+          const optB = parts[2].replace(/^B[:.)-]?\s*/i, "").trim();
+          const optC = parts[3].replace(/^C[:.)-]?\s*/i, "").trim();
+          const optD = parts[4].replace(/^D[:.)-]?\s*/i, "").trim();
+          const ansRaw = parts[5].replace(/^(ANS|ANSWER)[:.)-]?\s*/i, "").trim().toUpperCase();
+
+          if (qText && optA && optB && optC && optD && ansMap.hasOwnProperty(ansRaw)) {
+            parsedList.push({
+              year,
+              trade,
+              unit,
+              q: qText,
+              opts: [optA, optB, optC, optD],
+              ans: ansMap[ansRaw]
+            });
+          }
+        }
+      });
+    }
+
+    if (parsedList.length === 0) {
+      alert("Could not parse any valid questions. Please check the format shown in the guide above.");
+      return;
+    }
+
+    const updates = {};
+    parsedList.forEach(qObj => {
+      const newKey = db.ref("questions").push().key;
+      updates["questions/" + newKey] = qObj;
+    });
+
+    db.ref().update(updates)
+      .then(() => {
+        document.getElementById("bulkInputArea").value = "";
+        alert(`Success! ${parsedList.length} questions uploaded to Cloud and synced to all student phones!`);
+        switchTab("single");
+      })
+      .catch(err => {
+        alert("Failed to upload bulk questions: " + err.message);
+      });
+  }
+
+  // SINGLE QUESTION MANAGER
   function addQuestionToCloud() {
     const year = document.getElementById("qYear").value;
     const trade = document.getElementById("qTrade").value;
@@ -655,7 +1192,7 @@
         document.getElementById("optB").value = "";
         document.getElementById("optC").value = "";
         document.getElementById("optD").value = "";
-        alert("Question added to cloud! All student devices will receive it immediately.");
+        alert("Question saved to cloud!");
       });
   }
 
@@ -665,25 +1202,33 @@
     }
   }
 
+  function clearAllCloudQuestions() {
+    if (confirm("Delete ALL custom cloud questions? (Built-in 25 questions will remain as fallback).")) {
+      db.ref("questions").remove();
+    }
+  }
+
   function renderQuestionsList() {
     const container = document.getElementById("cloudQuestionsList");
     const yearFilter = document.getElementById("viewQYearFilter").value;
     const list = liveQuestions.filter(item => yearFilter === "ALL" || item.year === yearFilter);
 
+    document.getElementById("qCountBadge").innerText = list.length;
+
     if (list.length === 0) {
-      container.innerHTML = `<p style="color:var(--muted);">No custom cloud questions added yet (using built-in sample questions).</p>`;
+      container.innerHTML = `<p style="color:#94a3b8;">No custom cloud questions found (currently serving 25 built-in Employability Skills questions).</p>`;
       return;
     }
 
     container.innerHTML = list.map((item, i) => `
-      <div style="border:1px solid #e2e8f0; padding:12px; border-radius:6px; margin-bottom:10px; background:#fff;">
-        <div style="display:flex; justify-content:space-between; gap:10px;">
-          <strong>Q${i + 1}. [${item.year} | ${item.trade} | ${item.unit}] ${item.q}</strong>
+      <div style="border:1px solid var(--border-subtle); padding:14px; border-radius:10px; margin-bottom:10px; background:rgba(30,41,59,0.55);">
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+          <strong style="color:#f8fafc;">Q${i + 1}. <span style="color:var(--neon-cyan);">[${item.year} • ${item.trade} • ${item.unit}]</span> ${item.q}</strong>
           <button class="btn btn-danger btn-sm" onclick="deleteCloudQuestion('${item.id}')">Delete</button>
         </div>
-        <div style="font-size:0.85rem; color:#475569; margin-top:6px;">
-          A) ${item.opts[0]} | B) ${item.opts[1]} | C) ${item.opts[2]} | D) ${item.opts[3]}
-          <br/><strong style="color:var(--success);">Correct: ${item.opts[item.ans]}</strong>
+        <div style="font-size:0.84rem; color:#cbd5e1; margin-top:8px;">
+          A) ${item.opts[0]} &nbsp;|&nbsp; B) ${item.opts[1]} &nbsp;|&nbsp; C) ${item.opts[2]} &nbsp;|&nbsp; D) ${item.opts[3]}
+          <br/><strong style="color:#34d399;">Correct Answer: ${item.opts[item.ans]}</strong>
         </div>
       </div>
     `).join("");
@@ -691,3 +1236,4 @@
 </script>
 </body>
 </html>
+Displaying swagat_iti_cbt_neon_final.txt.
