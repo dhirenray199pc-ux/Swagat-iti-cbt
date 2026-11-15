@@ -3,1226 +3,1480 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Swagat ITI - Online CBT Examination Portal</title>
-  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <title>Swagat ITI - Next-Gen Live CBT Assessment Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <!-- Firebase App & Realtime Database Compat SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <style>
     :root {
-      --bg-dark: #070b14;
-      --bg-card: rgba(15, 23, 42, 0.78);
-      --bg-input: rgba(30, 41, 59, 0.85);
-      --neon-cyan: #00f5d4;
-      --neon-blue: #3b82f6;
-      --neon-purple: #a855f7;
-      --neon-pink: #ec4899;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-glow: rgba(0, 245, 212, 0.28);
-      --border-subtle: rgba(148, 163, 184, 0.18);
-      --success: #10b981;
-      --danger: #ef4444;
+      --bg-main: #f4f8ff;
+      --bg-card: #ffffff;
+      --bg-soft: #eef5ff;
+      --primary: #0066ff;
+      --primary-dark: #004ecc;
+      --neon-cyan: #00d4ff;
+      --neon-glow: 0 0 18px rgba(0, 180, 255, 0.35), 0 4px 20px rgba(0, 102, 255, 0.12);
+      --border-neon: #bae0ff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --success: #059669;
+      --success-bg: #d1fae5;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --purple: #7c3aed;
+      --purple-bg: #ede9fe;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg-dark);
-      background-image:
-        radial-gradient(circle at 15% 15%, rgba(0, 245, 212, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 85% 20%, rgba(168, 85, 247, 0.14) 0%, transparent 42%),
-        radial-gradient(circle at 50% 90%, rgba(59, 130, 246, 0.12) 0%, transparent 45%);
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top right, #e0f2fe 0%, var(--bg-main) 45%, #ffffff 100%);
       color: var(--text-main);
       min-height: 100vh;
       line-height: 1.5;
     }
 
-    /* Header */
-    header {
-      background: rgba(10, 15, 28, 0.85);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border-glow);
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+    /* Neon Top Bar */
+    .topbar {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid var(--border-neon);
+      box-shadow: 0 4px 24px rgba(0, 140, 255, 0.1);
+      padding: 14px 20px;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 4px 25px rgba(0, 245, 212, 0.08);
     }
-
-    .brand h1 {
-      font-size: 1.3rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      background: linear-gradient(90deg, #00f5d4, #3b82f6, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .brand small {
-      display: block;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      letter-spacing: 0.3px;
-    }
-
-    .header-actions {
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
     }
-
-    .sync-badge {
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid var(--border-subtle);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-main);
-    }
-
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #00f5d4;
-      box-shadow: 0 0 10px #00f5d4, 0 0 20px #00f5d4;
-      animation: pulse 1.8s infinite;
-    }
-
-    .dot.offline {
-      background: #ef4444;
-      box-shadow: 0 0 10px #ef4444;
-      animation: none;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.25); opacity: 0.65; }
-    }
-
-    .container {
-      max-width: 1080px;
-      margin: 26px auto;
-      padding: 0 16px;
-    }
-
-    .card {
-      background: var(--bg-card);
-      backdrop-filter: blur(16px);
-      border-radius: 16px;
-      padding: 26px;
-      border: 1px solid var(--border-glow);
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-      margin-bottom: 24px;
-    }
-
-    h2 {
+    .brand h1 {
       font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 18px;
-      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(90deg, #0052cc, #00aaff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.3px;
+    }
+    .brand p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .nav-actions {
       display: flex;
       align-items: center;
       gap: 10px;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 10px;
+      flex-wrap: wrap;
     }
-
-    h2::before {
-      content: "";
-      display: inline-block;
-      width: 4px;
-      height: 20px;
-      border-radius: 4px;
-      background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
-      box-shadow: 0 0 10px var(--neon-cyan);
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.25);
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00b4d8;
+      box-shadow: 0 0 8px #00d4ff;
+      animation: pulse 1.5s infinite;
     }
-
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--neon-cyan);
-      letter-spacing: 0.3px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 11px 13px;
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      font-size: 0.94rem;
-      background: var(--bg-input);
-      color: #fff;
-      transition: all 0.2s ease;
-    }
-
-    input::placeholder, textarea::placeholder { color: #64748b; }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--neon-cyan);
-      box-shadow: 0 0 0 3px rgba(0, 245, 212, 0.15);
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
     }
 
     /* Buttons */
     .btn {
-      padding: 11px 20px;
       border: none;
       border-radius: 10px;
-      font-weight: 700;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 0.92rem;
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
+      font-family: inherit;
     }
-
-    .btn-neon {
-      background: linear-gradient(135deg, #00f5d4 0%, #3b82f6 100%);
-      color: #041019;
-      box-shadow: 0 0 18px rgba(0, 245, 212, 0.35);
-    }
-
-    .btn-neon:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 26px rgba(0, 245, 212, 0.6);
-    }
-
-    .btn-purple {
-      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    .btn-primary {
+      background: linear-gradient(135deg, #0066ff, #00b4ff);
       color: #fff;
-      box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
+      box-shadow: var(--neon-glow);
     }
-
-    .btn-purple:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 24px rgba(168, 85, 247, 0.6);
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #fff;
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
-    }
-
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.18);
-      border: 1px solid rgba(239, 68, 68, 0.5);
-      color: #fca5a5;
-    }
-
-    .btn-danger:hover {
-      background: #ef4444;
-      color: #fff;
-    }
-
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 24px rgba(0, 180, 255, 0.55); }
     .btn-outline {
-      background: rgba(0, 245, 212, 0.08);
-      border: 1px solid var(--neon-cyan);
-      color: var(--neon-cyan);
-      padding: 7px 14px;
-      font-size: 0.84rem;
+      background: #ffffff;
+      color: var(--primary);
+      border: 1.5px solid #7cc4fa;
     }
+    .btn-outline:hover { background: #f0f7ff; border-color: var(--primary); }
+    .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-success { background: #059669; color: #fff; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25); }
+    .btn-purple { background: #ede9fe; color: #6d28d9; border: 1px solid #c4b5fd; }
+    .btn-sm { padding: 6px 11px; font-size: 0.78rem; border-radius: 8px; }
 
-    .btn-outline:hover {
-      background: var(--neon-cyan);
-      color: #041019;
-      box-shadow: 0 0 15px rgba(0, 245, 212, 0.45);
+    /* Container & Neon Cards */
+    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px 40px; }
+    .card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-neon);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 102, 255, 0.06), inset 0 0 0 1px rgba(255,255,255,0.8);
+      margin-bottom: 20px;
     }
-
-    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
-    .hidden { display: none !important; }
-
-    /* Exam UI */
-    .exam-bar {
+    .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .card-title { font-size: 1.1rem; font-weight: 700; color: #004ecc; }
+
+    /* Forms */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.8rem; font-weight: 600; color: #334155; }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #0099ff;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(0, 180, 255, 0.15);
+    }
+
+    /* Exam Interface */
+    .exam-header-bar {
+      background: linear-gradient(135deg, #0052cc, #0099ff);
+      color: #fff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
       gap: 12px;
-      background: rgba(30, 41, 59, 0.7);
-      padding: 14px 18px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(59, 130, 246, 0.35);
+      margin-bottom: 18px;
+      box-shadow: var(--neon-glow);
     }
-
-    .timer {
+    .timer-box {
       font-family: 'JetBrains Mono', monospace;
+      font-size: 1.25rem;
       font-weight: 700;
-      font-size: 1.15rem;
-      color: #ff4d6d;
-      background: rgba(239, 68, 68, 0.12);
+      background: rgba(255,255,255,0.18);
       padding: 6px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      text-shadow: 0 0 8px rgba(255, 77, 109, 0.5);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+    .exam-layout {
+      display: grid;
+      grid-template-columns: 1fr 310px;
+      gap: 20px;
+    }
+    @media (max-width: 860px) {
+      .exam-layout { grid-template-columns: 1fr; }
     }
 
-    .q-box {
-      background: rgba(15, 23, 42, 0.55);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 16px;
+    /* Subject Tabs */
+    .subject-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
       margin-bottom: 16px;
     }
-
-    .q-title {
-      font-weight: 600;
-      margin-bottom: 12px;
-      font-size: 1rem;
-      color: #f1f5f9;
+    .sub-tab {
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1.5px solid #bae0ff;
+      background: #f0f7ff;
+      color: #0052cc;
+      cursor: pointer;
+    }
+    .sub-tab.active {
+      background: linear-gradient(135deg, #0066ff, #00b4ff);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(0, 140, 255, 0.3);
     }
 
-    .opt-label {
+    /* Question Box */
+    .q-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    .q-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 16px;
+      padding: 14px;
+      background: #f8fbff;
+      border-left: 4px solid #0088ff;
+      border-radius: 8px;
+    }
+    .options-list { display: flex; flex-direction: column; gap: 10px; }
+    .option-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 10px 14px;
-      border: 1px solid var(--border-subtle);
-      border-radius: 9px;
-      margin-bottom: 8px;
+      padding: 13px 16px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
       cursor: pointer;
-      background: rgba(30, 41, 59, 0.45);
-      transition: all 0.15s ease;
+      transition: all 0.18s;
+      background: #fff;
+      font-weight: 500;
     }
-
-    .opt-label:hover {
-      border-color: var(--neon-cyan);
-      background: rgba(0, 245, 212, 0.08);
+    .option-item:hover { border-color: #38bdf8; background: #f0f9ff; }
+    .option-item.selected {
+      border-color: #0066ff;
+      background: #e0f2fe;
+      box-shadow: 0 0 12px rgba(0, 160, 255, 0.2);
+      font-weight: 700;
+      color: #003d99;
     }
-
-    .opt-label input[type="radio"] {
-      width: 17px;
-      height: 17px;
-      accent-color: var(--neon-cyan);
+    .opt-key {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      flex-shrink: 0;
     }
+    .option-item.selected .opt-key { background: #0066ff; color: #fff; }
 
-    /* Stats Pills */
+    /* NIMI Question Palette */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .pal-btn {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      background: #f1f5f9;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: #334155;
+    }
+    .pal-btn.current { outline: 2.5px solid #0066ff; outline-offset: 1px; }
+    .pal-btn.answered { background: #10b981; color: #fff; border-color: #059669; }
+    .pal-btn.not-answered { background: #ef4444; color: #fff; border-color: #dc2626; }
+    .pal-btn.review { background: #8b5cf6; color: #fff; border-color: #7c3aed; }
+    .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.74rem; color: #475569; }
+    .leg-item { display: flex; align-items: center; gap: 6px; }
+    .leg-box { width: 12px; height: 12px; border-radius: 3px; }
+
+    /* Stats & Tables */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .stat-box {
-      background: rgba(30, 41, 59, 0.65);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 12px 16px;
-    }
-
-    .stat-box span {
-      display: block;
-      font-size: 0.76rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .stat-box strong {
-      font-size: 1.35rem;
-      color: var(--neon-cyan);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* Table */
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: 12px;
-      border: 1px solid var(--border-subtle);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border-subtle);
-      text-align: left;
-    }
-
-    th {
-      background: rgba(30, 41, 59, 0.9);
-      font-weight: 700;
-      color: var(--neon-cyan);
-      text-transform: uppercase;
-      font-size: 0.78rem;
-      letter-spacing: 0.5px;
-    }
-
-    tr:hover td { background: rgba(255, 255, 255, 0.03); }
-
-    .badge {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.74rem;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-    }
-
-    .badge-pass {
-      background: rgba(16, 185, 129, 0.18);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.45);
-    }
-
-    .badge-fail {
-      background: rgba(239, 68, 68, 0.18);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.45);
-    }
-
-    .tabs {
-      display: flex;
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
       margin-bottom: 20px;
-      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f0f7ff 100%);
+      border: 1.5px solid #bae0ff;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 4px 15px rgba(0, 120, 255, 0.06);
+    }
+    .stat-label { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .stat-val { font-size: 1.75rem; font-weight: 800; color: #0066ff; margin-top: 4px; }
+
+    .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #cbd5e1; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; background: #fff; }
+    th {
+      background: #e0f2fe;
+      color: #004ecc;
+      text-align: left;
+      padding: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    td { padding: 11px 12px; border-top: 1px solid #e2e8f0; white-space: nowrap; }
+    tr:hover td { background: #f8fbff; }
+
+    .pill-pass { background: var(--success-bg); color: var(--success); padding: 3px 9px; border-radius: 999px; font-weight: 700; font-size: 0.75rem; }
+    .pill-fail { background: var(--danger-bg); color: var(--danger); padding: 3px 9px; border-radius: 999px; font-weight: 700; font-size: 0.75rem; }
+
+    /* Modal & Hidden */
+    .hidden { display: none !important; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 999;
+    }
+    .modal-box {
+      background: #fff;
+      border: 2px solid #7dd3fc;
+      box-shadow: var(--neon-glow);
+      border-radius: 18px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
     }
 
-    .tab-btn {
-      background: rgba(30, 41, 59, 0.8);
-      color: var(--text-muted);
-      border: 1px solid var(--border-subtle);
-    }
-
-    .tab-btn.active {
-      background: linear-gradient(135deg, rgba(0, 245, 212, 0.2), rgba(59, 130, 246, 0.25));
-      color: var(--neon-cyan);
-      border-color: var(--neon-cyan);
-      box-shadow: 0 0 14px rgba(0, 245, 212, 0.22);
-    }
-
-    .helper-box {
-      background: rgba(168, 85, 247, 0.1);
-      border: 1px dashed rgba(168, 85, 247, 0.5);
-      border-radius: 10px;
+    /* Switch Toggle */
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 12px 14px;
-      font-size: 0.82rem;
-      color: #e9d5ff;
-      margin-bottom: 12px;
+      background: #f0f7ff;
+      border: 1px solid #bae0ff;
+      border-radius: 12px;
+      margin-bottom: 10px;
     }
 
-    code {
-      font-family: 'JetBrains Mono', monospace;
-      background: rgba(0, 0, 0, 0.45);
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: var(--neon-cyan);
+    /* Print Marksheet Styling */
+    @media print {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea { position: absolute; left: 0; top: 0; width: 100%; background: #fff; padding: 20px; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <h1>SWAGAT INDUSTRIAL TRAINING CENTRE</h1>
-    <small>Bhawanipatna, Kalahandi • Next-Gen Live CBT Assessment Portal</small>
-  </div>
-  <div class="header-actions">
-    <span class="sync-badge"><span id="syncDot" class="dot offline"></span> <span id="syncText">Connecting...</span></span>
-    <button class="btn btn-outline" onclick="toggleInstructorModal()">Instructor Login</button>
-  </div>
-</header>
-
-<div class="container">
-
-  <!-- 1. STUDENT REGISTRATION -->
-  <div id="regView" class="card">
-    <h2>Trainee Examination Registration</h2>
-    <div class="grid">
-      <div>
-        <label>Trainee Full Name *</label>
-        <input type="text" id="stuName" placeholder="Enter your full name" />
+  <!-- TOP NAVBAR -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>SWAGAT INDUSTRIAL TRAINING CENTRE</h1>
+        <p>Bhawanipatna, Kalahandi • Next-Gen Live CBT Assessment Portal</p>
       </div>
-      <div>
-        <label>Roll Number / Reg. No *</label>
-        <input type="text" id="stuRoll" placeholder="e.g., 240821001" />
-      </div>
-      <div>
-        <label>Trade *</label>
-        <select id="stuTrade">
-          <option value="Fitter">Fitter</option>
-          <option value="Electrician">Electrician</option>
-          <option value="COPA">COPA</option>
-        </select>
-      </div>
-      <div>
-        <label>Academic Year *</label>
-        <select id="stuYear">
-          <option value="1st Year">1st Year</option>
-          <option value="2nd Year">2nd Year</option>
-        </select>
-      </div>
-      <div>
-        <label>Assessment Unit *</label>
-        <select id="stuUnit">
-          <option value="Unit 1">Unit 1</option>
-          <option value="Unit 2">Unit 2</option>
-          <option value="Unit 3">Unit 3</option>
-          <option value="Unit 4">Unit 4</option>
-          <option value="Unit 5">Unit 5</option>
-        </select>
-      </div>
-      <div>
-        <label>Exam Month *</label>
-        <input type="month" id="stuMonth" />
+      <div class="nav-actions">
+        <span class="status-pill"><span class="dot"></span> <span id="syncStatusText">CLOUD LIVE</span></span>
+        <button class="btn btn-outline btn-sm" id="btnHomeNav" onclick="showView('studentLoginView')">Trainee Exam</button>
+        <button class="btn btn-primary btn-sm" id="btnInstructorNav" onclick="openInstructorAuth()">Instructor Login</button>
       </div>
     </div>
-    <div style="margin-top: 22px;">
-      <button class="btn btn-neon" onclick="startExam()">Start CBT Examination</button>
-    </div>
-  </div>
+  </header>
 
-  <!-- 2. EXAM INTERFACE -->
-  <div id="examView" class="card hidden">
-    <div class="exam-bar">
-      <div>
-        <strong id="examHeaderInfo" style="font-size:1.05rem; color:#fff;"></strong>
-        <div style="font-size:0.84rem; color:var(--neon-cyan);" id="examSubInfo"></div>
-      </div>
-      <div class="timer">TIME LEFT: <span id="timerDisplay">60:00</span></div>
-    </div>
-    <div id="questionsContainer"></div>
-    <button class="btn btn-success" onclick="submitExam(false)">Submit Final Examination</button>
-  </div>
+  <main class="container">
 
-  <!-- 3. RESULT SUMMARY -->
-  <div id="resultView" class="card hidden">
-    <h2>Examination Score Card</h2>
-    <div id="resultDetails" style="margin-bottom: 18px; line-height: 1.9;"></div>
-    <button class="btn btn-neon" onclick="resetToHome()">Back to Home</button>
-  </div>
-
-  <!-- 4. INSTRUCTOR LOGIN MODAL -->
-  <div id="pinModal" class="card hidden" style="max-width:420px; margin:30px auto;">
-    <h2>Instructor Authentication</h2>
-    <label>Enter Security PIN</label>
-    <input type="password" id="instructorPinInput" placeholder="Enter PIN" onkeyup="if(event.key==='Enter') verifyPin()" />
-    <div style="margin-top:16px; display:flex; gap:10px;">
-      <button class="btn btn-neon" onclick="verifyPin()">Unlock Dashboard</button>
-      <button class="btn btn-danger" onclick="toggleInstructorModal()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- 5. INSTRUCTOR DASHBOARD -->
-  <div id="instructorView" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-      <h2 style="margin:0; border:none;">Instructor Control Center (Cloud Live)</h2>
-      <button class="btn btn-danger btn-sm" onclick="logoutInstructor()">Exit Portal</button>
-    </div>
-
-    <div class="tabs">
-      <button class="btn tab-btn active" id="tabResBtn" onclick="switchTab('results')">Live Marksheet & Results</button>
-      <button class="btn tab-btn" id="tabBulkBtn" onclick="switchTab('bulk')">Bulk AI Question Paste</button>
-      <button class="btn tab-btn" id="tabSingleBtn" onclick="switchTab('single')">Single Question & Bank</button>
-    </div>
-
-    <!-- TAB A: LIVE RESULTS -->
-    <div id="resultsTab">
-      <div class="grid" style="margin-bottom:16px;">
+    <!-- ==================== 1. TRAINEE LOGIN VIEW ==================== -->
+    <section id="studentLoginView" class="card">
+      <div class="card-header">
         <div>
-          <label>Filter by Trade</label>
-          <select id="filterTrade" onchange="renderResultsTable()">
-            <option value="ALL">All Trades</option>
-            <option value="Fitter">Fitter</option>
-            <option value="Electrician">Electrician</option>
-            <option value="COPA">COPA</option>
-          </select>
+          <h2 class="card-title">Trainee CBT Registration & Exam Login</h2>
+          <p style="font-size:0.82rem; color:#475569;">Enter your exact NCVT Roll Number & details to begin monthly assessment.</p>
         </div>
-        <div>
-          <label>Filter by Year</label>
-          <select id="filterYear" onchange="renderResultsTable()">
-            <option value="ALL">All Years</option>
-            <option value="1st Year">1st Year</option>
-            <option value="2nd Year">2nd Year</option>
-          </select>
-        </div>
-        <div>
-          <label>Filter by Month</label>
-          <input type="month" id="filterMonth" onchange="renderResultsTable()" />
-        </div>
+        <span id="examLiveBadge" class="badge" style="background:#d1fae5; color:#065f46;">EXAM PORTAL: LIVE</span>
       </div>
 
-      <div class="stats-grid" id="statsSummary"></div>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-        <button class="btn btn-neon btn-sm" onclick="exportCSV()">Export Filtered CSV</button>
-        <button class="btn btn-danger btn-sm" onclick="clearAllResults()">Clear All Cloud Results</button>
+      <div id="examLockedNotice" class="hidden" style="background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; padding:16px; border-radius:12px; margin-bottom:16px; font-weight:600;">
+        Exam Portal is currently LOCKED by the Instructor. Please wait until the instructor activates the test session.
       </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Roll No</th>
-              <th>Trainee Name</th>
-              <th>Trade / Year</th>
-              <th>Unit / Month</th>
-              <th>Score</th>
-              <th>%</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="resultsTableBody">
-            <tr><td colspan="8" style="text-align:center;">Syncing live results from cloud...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB B: BULK AI QUESTION PASTE -->
-    <div id="bulkTab" class="hidden">
-      <div class="helper-box">
-        <strong>Bulk AI Paste Guide (Syncs to All Student Phones Instantly):</strong><br/>
-        Aap AI se generated questions ko neeche diye gaye format mein paste karke ek click mein cloud par upload kar sakte hain:<br/><br/>
-        <strong>Format 1 (Simple Text Format):</strong><br/>
-        <code>Q: What is the full form of CPU? | A: Central Process Unit | B: Central Processing Unit | C: Control Unit | D: None | ANS: B</code><br/><br/>
-        <strong>Format 2 (JSON Array Format):</strong><br/>
-        <code>[{"q":"Question?","opts":["Opt A","Opt B","Opt C","Opt D"],"ans":0}]</code>
-      </div>
-
-      <div class="grid" style="margin-bottom:14px;">
-        <div>
-          <label>Assign to Year *</label>
-          <select id="bulkYear">
-            <option value="1st Year">1st Year</option>
-            <option value="2nd Year">2nd Year</option>
-          </select>
-        </div>
-        <div>
-          <label>Assign to Trade *</label>
-          <select id="bulkTrade">
-            <option value="ALL">All Trades (Common / ES)</option>
-            <option value="Fitter">Fitter</option>
-            <option value="Electrician">Electrician</option>
-            <option value="COPA">COPA</option>
-          </select>
-        </div>
-        <div>
-          <label>Assign to Unit *</label>
-          <select id="bulkUnit">
-            <option value="ALL">All Units</option>
-            <option value="Unit 1">Unit 1</option>
-            <option value="Unit 2">Unit 2</option>
-            <option value="Unit 3">Unit 3</option>
-            <option value="Unit 4">Unit 4</option>
-            <option value="Unit 5">Unit 5</option>
-          </select>
-        </div>
-      </div>
-
-      <label>Paste AI Questions Here (Text or JSON) *</label>
-      <textarea id="bulkInputArea" rows="10" placeholder="Q: What is HTML? | A: Hyper Text Markup Language | B: High Text Machine Language | C: Hyper Tabular Markup | D: None | ANS: A&#10;Q: Which tool is used for filing? | A: Hammer | B: File | C: Chisel | D: Punch | ANS: B"></textarea>
-
-      <div style="margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn btn-purple" onclick="uploadBulkQuestions()">Upload Bulk Questions to Cloud</button>
-        <button class="btn btn-outline" onclick="fillSampleBulk()">Load Sample Format</button>
-      </div>
-    </div>
-
-    <!-- TAB C: SINGLE QUESTION & MANAGE BANK -->
-    <div id="singleTab" class="hidden">
-      <div style="background:rgba(30,41,59,0.55); padding:18px; border-radius:12px; border:1px solid var(--border-subtle); margin-bottom:20px;">
-        <h3 style="font-size:1rem; margin-bottom:12px; color:var(--neon-cyan);">Add Single Question</h3>
-        <div class="grid">
-          <div>
-            <label>Target Year *</label>
-            <select id="qYear">
-              <option value="1st Year">1st Year</option>
-              <option value="2nd Year">2nd Year</option>
-            </select>
+      <form id="loginForm" onsubmit="startExam(event)">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Trainee Full Name *</label>
+            <input type="text" id="stuName" placeholder="e.g. Dhiren Rai" required />
           </div>
-          <div>
+          <div class="form-group">
+            <label>NCVT Roll Number *</label>
+            <input type="text" id="stuRoll" placeholder="e.g. R170821030183" required style="text-transform:uppercase; font-family:'JetBrains Mono', monospace;" />
+          </div>
+          <div class="form-group">
             <label>Trade *</label>
-            <select id="qTrade">
-              <option value="ALL">All Trades (Common / ES)</option>
+            <select id="stuTrade" required>
               <option value="Fitter">Fitter</option>
               <option value="Electrician">Electrician</option>
               <option value="COPA">COPA</option>
             </select>
           </div>
-          <div>
-            <label>Unit *</label>
-            <select id="qUnit">
-              <option value="ALL">All Units</option>
-              <option value="Unit 1">Unit 1</option>
-              <option value="Unit 2">Unit 2</option>
-              <option value="Unit 3">Unit 3</option>
-              <option value="Unit 4">Unit 4</option>
-              <option value="Unit 5">Unit 5</option>
+          <div class="form-group">
+            <label>Training Year *</label>
+            <select id="stuYear" required>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Assessment Month *</label>
+            <select id="stuMonth" required>
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September">September</option>
+              <option value="October">October</option>
+              <option value="November" selected>November</option>
+              <option value="December">December</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Preferred Question Language</label>
+            <select id="stuLang">
+              <option value="en">English Only</option>
+              <option value="bi">Bilingual (English + Odia)</option>
             </select>
           </div>
         </div>
-        <div style="margin-top:12px;">
-          <label>Question Text *</label>
-          <textarea id="qText" rows="2" placeholder="Enter question here..."></textarea>
+
+        <div style="margin-top:18px; padding:14px; background:#f0f7ff; border-radius:12px; border:1px solid #bae0ff; font-size:0.82rem; color:#1e3a8a;">
+          <strong>Anti-Cheating & CBT Rules:</strong>
+          <ul style="margin-left:18px; margin-top:4px;">
+            <li>Questions & options are uniquely shuffled for every trainee.</li>
+            <li>Do NOT switch tabs, minimize browser, or open split-screen. <strong>3 warnings = Auto-Submit!</strong></li>
+            <li>Only <strong>1 attempt per Roll Number</strong> is permitted per month.</li>
+          </ul>
         </div>
-        <div class="grid" style="margin-top:12px;">
-          <div><label>Option A *</label><input type="text" id="optA" /></div>
-          <div><label>Option B *</label><input type="text" id="optB" /></div>
-          <div><label>Option C *</label><input type="text" id="optC" /></div>
-          <div><label>Option D *</label><input type="text" id="optD" /></div>
+
+        <div style="margin-top:18px; display:flex; justify-content:flex-end;">
+          <button type="submit" class="btn btn-primary" style="padding:12px 28px; font-size:0.95rem;">Start CBT Examination →</button>
         </div>
-        <div style="margin-top:12px; max-width:220px;">
-          <label>Correct Answer *</label>
-          <select id="qCorrect">
-            <option value="0">Option A</option>
-            <option value="1">Option B</option>
-            <option value="2">Option C</option>
-            <option value="3">Option D</option>
-          </select>
+      </form>
+    </section>
+
+    <!-- ==================== 2. LIVE CBT EXAM VIEW ==================== -->
+    <section id="examView" class="hidden">
+      <div class="exam-header-bar">
+        <div>
+          <div style="font-weight:800; font-size:1rem;" id="dispStudentInfo">Trainee Name • Roll No</div>
+          <div style="font-size:0.78rem; opacity:0.9;" id="dispTradeYear">Fitter • 2nd Year • November 2026</div>
         </div>
-        <button class="btn btn-neon" style="margin-top:14px;" onclick="addQuestionToCloud()">Save Single Question</button>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-sm" style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.4);" onclick="toggleExamLang()">🌐 Switch EN / ଓଡ଼ିଆ</button>
+          <div class="badge" style="background:#fef3c7; color:#92400e;" id="warningBadge">Warnings: 0/3</div>
+          <div class="timer-box" id="examTimer">60:00</div>
+        </div>
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-        <h3 style="font-size:1rem; color:#fff;">Cloud Question Bank (<span id="qCountBadge">0</span>)</h3>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <select id="viewQYearFilter" style="width:auto;" onchange="renderQuestionsList()">
-            <option value="ALL">Show All Years</option>
-            <option value="1st Year">1st Year Only</option>
-            <option value="2nd Year">2nd Year Only</option>
-          </select>
-          <button class="btn btn-danger btn-sm" onclick="clearAllCloudQuestions()">Delete All Cloud Qs</button>
+      <!-- Subject Tabs -->
+      <div class="subject-tabs" id="subjectTabs">
+        <button class="sub-tab active" onclick="filterBySubject('ALL')">All Subjects</button>
+        <button class="sub-tab" onclick="filterBySubject('Trade Theory')">Trade Theory</button>
+        <button class="sub-tab" onclick="filterBySubject('WCS')">Workshop Calc & Science</button>
+        <button class="sub-tab" onclick="filterBySubject('Employability Skills')">Employability Skills</button>
+      </div>
+
+      <div class="exam-layout">
+        <!-- Left Question Area -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="q-meta">
+            <span class="badge" id="qSubjectBadge">Trade Theory</span>
+            <span style="font-size:0.82rem; font-weight:700; color:#475569;" id="qCounter">Question 1 of 25</span>
+          </div>
+
+          <div class="q-text" id="qTextDisplay">Loading question...</div>
+          <div class="options-list" id="optionsContainer"></div>
+
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; margin-top:22px; padding-top:16px; border-top:1px solid #e2e8f0;">
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="prevQuestion()">← Previous</button>
+              <button class="btn btn-purple btn-sm" onclick="markForReview()">★ Mark for Review</button>
+              <button class="btn btn-outline btn-sm" onclick="clearResponse()">Clear</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-primary btn-sm" onclick="nextQuestion()">Save & Next →</button>
+              <button class="btn btn-success btn-sm" onclick="confirmSubmitExam()">Submit Exam</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right NIMI Question Palette -->
+        <div class="card" style="margin-bottom:0;">
+          <h3 style="font-size:0.95rem; font-weight:700; color:#004ecc;">NIMI Question Palette</h3>
+          <div class="palette-grid" id="questionPalette"></div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-box" style="background:#10b981;"></span> Answered</div>
+            <div class="leg-item"><span class="leg-box" style="background:#ef4444;"></span> Not Answered</div>
+            <div class="leg-item"><span class="leg-box" style="background:#8b5cf6;"></span> Marked Review</div>
+            <div class="leg-item"><span class="leg-box" style="background:#f1f5f9; border:1px solid #cbd5e1;"></span> Not Visited</div>
+          </div>
         </div>
       </div>
-      <div id="cloudQuestionsList">Loading cloud questions...</div>
+    </section>
+
+    <!-- ==================== 3. INSTANT RESULT & ANSWER KEY VIEW ==================== -->
+    <section id="resultView" class="hidden">
+      <div class="card" id="printArea">
+        <div style="text-align:center; border-bottom:2px solid #0066ff; padding-bottom:14px; margin-bottom:18px;">
+          <h2 style="color:#004ecc; font-size:1.3rem; font-weight:800;">SWAGAT INDUSTRIAL TRAINING CENTRE</h2>
+          <p style="font-size:0.82rem; color:#475569;">Bhawanipatna, Kalahandi, Odisha • CBT Assessment Scorecard</p>
+        </div>
+
+        <div class="grid-2" style="background:#f0f7ff; padding:14px; border-radius:12px; margin-bottom:18px; font-size:0.88rem;">
+          <div><strong>Trainee Name:</strong> <span id="resName">-</span></div>
+          <div><strong>Roll Number:</strong> <span id="resRoll" style="font-family:'JetBrains Mono',monospace;">-</span></div>
+          <div><strong>Trade & Year:</strong> <span id="resTradeYear">-</span></div>
+          <div><strong>Exam Month/Date:</strong> <span id="resDate">-</span></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Score</div>
+            <div class="stat-val" id="resScore">0/0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Percentage</div>
+            <div class="stat-val" id="resPercent">0%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Result Status</div>
+            <div class="stat-val" id="resStatus">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tab Warnings</div>
+            <div class="stat-val" id="resWarnings">0</div>
+          </div>
+        </div>
+
+        <!-- Subject Breakdown -->
+        <h3 style="font-size:0.95rem; font-weight:700; color:#004ecc; margin-bottom:10px;">Subject-Wise Performance</h3>
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Total Questions</th>
+                <th>Correct</th>
+                <th>Marks Obtained</th>
+                <th>Accuracy</th>
+              </tr>
+            </thead>
+            <tbody id="subjectBreakdownBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Answer Key Review (Controlled by Instructor Toggle) -->
+        <div id="answerKeySection" class="hidden">
+          <h3 style="font-size:0.95rem; font-weight:700; color:#004ecc; margin-bottom:10px;">Detailed Answer Key Review</h3>
+          <div id="answerKeyList" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+        <button class="btn btn-outline" onclick="window.print()">🖨️ Print / Save PDF Marksheet</button>
+        <button class="btn btn-primary" onclick="showView('studentLoginView')">Back to Portal Home</button>
+      </div>
+    </section>
+
+    <!-- ==================== 4. INSTRUCTOR DASHBOARD VIEW ==================== -->
+    <section id="instructorView" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Instructor Control Panel (ATO Dashboard)</h2>
+            <p style="font-size:0.8rem; color:#475569;">Manage live exams, question banks, filters, and trainee marksheets.</p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="switchInstructorTab('resultsTab')">📊 Results & Marksheets</button>
+            <button class="btn btn-outline btn-sm" onclick="switchInstructorTab('qbankTab')">📚 Question Bank Manager</button>
+            <button class="btn btn-outline btn-sm" onclick="switchInstructorTab('settingsTab')">⚙️ Exam Controls & Firebase</button>
+            <button class="btn btn-danger btn-sm" onclick="logoutInstructor()">Logout</button>
+          </div>
+        </div>
+
+        <!-- TAB A: RESULTS & FILTERS -->
+        <div id="resultsTab">
+          <!-- Filters -->
+          <div class="grid-3" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label>Search by Roll No or Name</label>
+              <input type="text" id="filterSearch" placeholder="Type Roll No or Name..." oninput="renderResultsTable()" />
+            </div>
+            <div class="form-group">
+              <label>Filter by Year</label>
+              <select id="filterYear" onchange="renderResultsTable()">
+                <option value="ALL">All Years</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Filter by Month</label>
+              <select id="filterMonth" onchange="renderResultsTable()">
+                <option value="ALL">All Months</option>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Filter by Trade</label>
+              <select id="filterTrade" onchange="renderResultsTable()">
+                <option value="ALL">All Trades</option>
+                <option value="Fitter">Fitter</option>
+                <option value="Electrician">Electrician</option>
+                <option value="COPA">COPA</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Filter by Result Status</label>
+              <select id="filterStatus" onchange="renderResultsTable()">
+                <option value="ALL">All (Pass & Fail)</option>
+                <option value="PASS">Passed Only</option>
+                <option value="FAIL">Failed Only</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Attempts</div>
+              <div class="stat-val" id="statTotal">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Passed (≥33%)</div>
+              <div class="stat-val" style="color:#059669;" id="statPassed">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Failed</div>
+              <div class="stat-val" style="color:#dc2626;" id="statFailed">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Avg Score</div>
+              <div class="stat-val" id="statAvg">0%</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+            <button class="btn btn-primary btn-sm" onclick="exportFilteredCSV()">📥 Export Filtered CSV</button>
+            <button class="btn btn-danger btn-sm" onclick="clearAllResults()">🗑️ Clear All Results</button>
+          </div>
+
+          <!-- Results Table -->
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Roll No</th>
+                  <th>Trainee Name</th>
+                  <th>Trade / Year</th>
+                  <th>Month</th>
+                  <th>Subject Marks (TT / WCS / ES)</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB B: QUESTION BANK MANAGER -->
+        <div id="qbankTab" class="hidden">
+          <div class="grid-2" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label>Select Target Year for Question Bank</label>
+              <select id="qbYearSelect" onchange="renderQuestionList()">
+                <option value="1st Year">1st Year Question Bank</option>
+                <option value="2nd Year">2nd Year Question Bank</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Upload Bulk Questions via CSV File</label>
+              <input type="file" id="csvQuestionUpload" accept=".csv" onchange="handleCSVQuestionUpload(event)" />
+              <small style="color:#64748b; font-size:0.74rem;">Format: Subject,Question_EN,Question_OD,OptA,OptB,OptC,OptD,CorrectIndex(0-3)</small>
+            </div>
+          </div>
+
+          <!-- Bulk AI JSON/Text Paste -->
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Bulk AI Question Paste (Format: Subject | Question EN | Question OD (Optional) | Opt A | Opt B | Opt C | Opt D | Correct Option A/B/C/D)</label>
+            <textarea id="bulkPasteBox" rows="5" placeholder="Trade Theory | What is the least count of a Vernier Caliper? | ଭର୍ନିୟର କ୍ୟାଲିପରର ସର୍ବନିମ୍ନ ମାପ କେତେ? | 0.01 mm | 0.02 mm | 0.05 mm | 0.10 mm | B"></textarea>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="btn btn-primary btn-sm" onclick="importBulkQuestions()">+ Add Bulk Questions</button>
+              <button class="btn btn-outline btn-sm" onclick="resetDefaultQuestions()">Reset Default NCVT Bank</button>
+            </div>
+          </div>
+
+          <h4 style="font-size:0.9rem; font-weight:700; color:#004ecc; margin:14px 0 8px;">Active Questions (<span id="qbCount">0</span>)</h4>
+          <div id="qbListContainer" style="max-height:360px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- TAB C: EXAM CONTROLS & FIREBASE -->
+        <div id="settingsTab" class="hidden">
+          <div class="switch-row">
+            <div>
+              <strong>Exam Portal Live Status</strong>
+              <p style="font-size:0.78rem; color:#475569;">Turn OFF to lock the exam after class hours so trainees cannot submit from home.</p>
+            </div>
+            <input type="checkbox" id="toggleExamLive" checked style="width:22px; height:22px;" onchange="savePortalSettings()" />
+          </div>
+
+          <div class="switch-row">
+            <div>
+              <strong>Show Answer Key After Exam Submit</strong>
+              <p style="font-size:0.78rem; color:#475569;">Allow trainees to view right/wrong answers immediately after submitting.</p>
+            </div>
+            <input type="checkbox" id="toggleShowKey" checked style="width:22px; height:22px;" onchange="savePortalSettings()" />
+          </div>
+
+          <div class="grid-2" style="margin-top:14px;">
+            <div class="form-group">
+              <label>Exam Duration (Minutes)</label>
+              <input type="number" id="settingDuration" value="60" min="5" max="180" onchange="savePortalSettings()" />
+            </div>
+            <div class="form-group">
+              <label>Firebase Realtime Database URL (Optional Cloud Sync)</label>
+              <input type="url" id="firebaseDbUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" onchange="savePortalSettings()" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- INSTRUCTOR PIN MODAL -->
+  <div id="pinModal" class="modal-backdrop hidden">
+    <div class="modal-box" style="max-width:380px;">
+      <h3 class="card-title" style="margin-bottom:8px;">Instructor Login</h3>
+      <p style="font-size:0.82rem; color:#475569; margin-bottom:14px;">Enter ATO Security PIN to access dashboard.</p>
+      <input type="password" id="instructorPinInput" placeholder="Enter PIN" onkeyup="if(event.key==='Enter') verifyInstructorPin()" />
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+        <button class="btn btn-outline btn-sm" onclick="closePinModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="verifyInstructorPin()">Unlock Dashboard</button>
+      </div>
     </div>
   </div>
 
-</div>
-
-<script>
-  // Configured Swagat CBT Firebase Credentials
-  const firebaseConfig = {
-    apiKey: "AIzaSyAPILyIA7DKr0Kkq8Z_JXUZ-w3EyYacV2o",
-    authDomain: "swagat-cbt.firebaseapp.com",
-    databaseURL: "https://swagat-cbt-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "swagat-cbt",
-    storageBucket: "swagat-cbt.firebasestorage.app",
-    messagingSenderId: "621687663758",
-    appId: "1:621687663758:web:7938a39266987facaceddf",
-    measurementId: "G-Z67WLWJMV1"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // Live Connection Status
-  db.ref(".info/connected").on("value", (snap) => {
-    const dot = document.getElementById("syncDot");
-    const txt = document.getElementById("syncText");
-    if (snap.val() === true) {
-      dot.classList.remove("offline");
-      txt.innerText = "CLOUD LIVE";
-    } else {
-      dot.classList.add("offline");
-      txt.innerText = "OFFLINE";
-    }
-  });
-
-  // 25 Built-in Employability Skills & ITI Questions (Fallback if cloud bank is empty)
-  const defaultQuestions = [
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which shortcut key is used to copy selected text in Windows?", opts: ["Ctrl + X", "Ctrl + C", "Ctrl + V", "Ctrl + Z"], ans: 1 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "What is the full form of CPU?", opts: ["Central Process Unit", "Central Processing Unit", "Computer Personal Unit", "Control Processing Unit"], ans: 1 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which device is used to input printed text or images into a computer?", opts: ["Printer", "Monitor", "Scanner", "Speaker"], ans: 2 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "In MS Excel, every formula must start with which symbol?", opts: ["#", "@", "=", "&"], ans: 2 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "What does LAN stand for in computer networking?", opts: ["Large Area Network", "Local Area Network", "Logical Area Network", "Long Area Network"], ans: 1 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which key is used to permanently delete a file without sending it to Recycle Bin?", opts: ["Delete", "Ctrl + Delete", "Shift + Delete", "Alt + Delete"], ans: 2 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "What is the brain of any computer system?", opts: ["ALU", "Memory", "CPU", "Control Unit"], ans: 2 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which of the following is an example of an Operating System?", opts: ["MS Word", "Windows 11", "Google Chrome", "Adobe Reader"], ans: 1 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "What is the full form of PDF?", opts: ["Portable Document Format", "Printed Document File", "Public Data Format", "Personal Document File"], ans: 0 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which storage memory is volatile in nature?", opts: ["ROM", "Hard Disk", "RAM", "Pen Drive"], ans: 2 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Communication is a non-stop ________ process.", opts: ["Paper", "Two-way", "One-way", "Closed"], ans: 1 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Which of the following is a barrier to effective communication?", opts: ["Active listening", "Noise and distraction", "Clear pronunciation", "Eye contact"], ans: 1 },
-    { year: "1st Year", trade: "ALL", unit: "ALL", q: "Resume should be ________ and accurate.", opts: ["Long and detailed", "Short and precise", "Handwritten", "Colorful"], ans: 1 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "What does SMART stand for in goal setting?", opts: ["Simple, Measurable, Active, Real, Time", "Specific, Measurable, Achievable, Relevant, Time-bound", "Standard, Modern, Accurate, Rapid, Timely", "Specific, Manageable, Aligned, Reliable, Tested"], ans: 1 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which quality is most essential for an entrepreneur?", opts: ["Fear of failure", "Risk-taking ability", "Laziness", "Depending on others"], ans: 1 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "What is the full form of GST in India?", opts: ["General Sales Tax", "Goods and Services Tax", "Government Service Tax", "Gross Sales Tax"], ans: 1 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which portal is launched by Govt. of India for apprenticeship training?", opts: ["NAPS (apprenticeshipindia.gov.in)", "IRCTC", "UMANG", "SWAYAM"], ans: 0 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Kaizen refers to which workplace practice?", opts: ["Continuous improvement", "Annual audit", "Strict punishment", "Machine repair"], ans: 0 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "In 5S methodology, what does 'Seiri' mean?", opts: ["Shine", "Sort", "Sustain", "Standardize"], ans: 1 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which document is required to open a bank account or file income tax in India?", opts: ["Driving License", "PAN Card", "Ration Card", "Voter ID"], ans: 1 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "What does PPE stand for in industrial safety?", opts: ["Personal Protective Equipment", "Private Protective Engineering", "Public Protection Equipment", "Personal Power Equipment"], ans: 0 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which fire extinguisher is used for electrical fires?", opts: ["Water type", "Foam type", "CO2 / Dry Powder type", "Wet chemical"], ans: 2 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "What is the full form of MSME?", opts: ["Micro, Small and Medium Enterprises", "Medium, Small and Macro Enterprises", "Micro, Standard and Major Enterprises", "Mini, Small and Medium Enterprises"], ans: 0 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Feedback in communication helps the sender to know ________.", opts: ["Message was understood", "Time of day", "Sender's name", "Language name"], ans: 0 },
-    { year: "2nd Year", trade: "ALL", unit: "ALL", q: "Which cloud service allows storing and sharing documents online via Google?", opts: ["Google Drive", "Windows Media Player", "Notepad", "Paint"], ans: 0 }
-  ];
-
-  // Live Global State
-  let liveQuestions = [];
-  let liveResults = [];
-  let activeExamQuestions = [];
-  let currentStudent = null;
-  let timerInterval = null;
-  let secondsLeft = 3600;
-
-  // Auto-set current month
-  document.getElementById("stuMonth").value = new Date().toISOString().slice(0, 7);
-
-  // Sync Questions from Firebase
-  db.ref("questions").on("value", (snapshot) => {
-    const data = snapshot.val();
-    liveQuestions = [];
-    if (data) {
-      Object.keys(data).forEach((key) => {
-        liveQuestions.push({ id: key, ...data[key] });
-      });
-    }
-    renderQuestionsList();
-  });
-
-  // Sync Results from Firebase
-  db.ref("results").on("value", (snapshot) => {
-    const data = snapshot.val();
-    liveResults = [];
-    if (data) {
-      Object.keys(data).forEach((key) => {
-        liveResults.push({ id: key, ...data[key] });
-      });
-    }
-    liveResults.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-    renderResultsTable();
-  });
-
-  function shuffleArray(arr) {
-    const copy = [...arr];
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-  }
-
-  // START EXAM
-  function startExam() {
-    const name = document.getElementById("stuName").value.trim();
-    const roll = document.getElementById("stuRoll").value.trim();
-    const trade = document.getElementById("stuTrade").value;
-    const year = document.getElementById("stuYear").value;
-    const unit = document.getElementById("stuUnit").value;
-    const month = document.getElementById("stuMonth").value;
-
-    if (!name || !roll || !month) {
-      alert("Please enter Trainee Name, Roll Number, and Exam Month.");
-      return;
-    }
-
-    const poolSource = liveQuestions.length > 0 ? liveQuestions : defaultQuestions;
-    let filtered = poolSource.filter(item =>
-      item.year === year &&
-      (item.trade === "ALL" || item.trade === trade) &&
-      (item.unit === "ALL" || item.unit === unit)
-    );
-
-    if (filtered.length === 0) {
-      filtered = poolSource.filter(item => item.year === year);
-    }
-    if (filtered.length === 0) {
-      filtered = defaultQuestions;
-    }
-
-    activeExamQuestions = shuffleArray(filtered).slice(0, 25).map((qObj) => {
-      const correctText = qObj.opts[qObj.ans];
-      const shuffledOpts = shuffleArray(qObj.opts);
-      const newAnsIndex = shuffledOpts.indexOf(correctText);
-      return { ...qObj, shuffledOpts, newAnsIndex };
-    });
-
-    currentStudent = { name, roll, trade, year, unit, month };
-
-    document.getElementById("regView").classList.add("hidden");
-    document.getElementById("examView").classList.remove("hidden");
-    document.getElementById("examHeaderInfo").innerText = `${name} • Roll: ${roll}`;
-    document.getElementById("examSubInfo").innerText = `${trade} | ${year} | ${unit} | ${month}`;
-
-    const container = document.getElementById("questionsContainer");
-    container.innerHTML = "";
-    activeExamQuestions.forEach((q, idx) => {
-      let optsHtml = "";
-      q.shuffledOpts.forEach((optText, oIdx) => {
-        optsHtml += `
-          <label class="opt-label">
-            <input type="radio" name="q_${idx}" value="${oIdx}" />
-            <span>${optText}</span>
-          </label>
-        `;
-      });
-      container.innerHTML += `
-        <div class="q-box">
-          <div class="q-title">Q${idx + 1}. ${q.q}</div>
-          ${optsHtml}
-        </div>
-      `;
-    });
-
-    secondsLeft = 3600;
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      secondsLeft--;
-      const m = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
-      const s = String(secondsLeft % 60).padStart(2, "0");
-      document.getElementById("timerDisplay").innerText = `${m}:${s}`;
-      if (secondsLeft <= 0) {
-        clearInterval(timerInterval);
-        submitExam(true);
-      }
-    }, 1000);
-  }
-
-  // SUBMIT EXAM
-  function submitExam(autoSubmit) {
-    if (!autoSubmit && !confirm("Submit your final examination answers?")) return;
-    clearInterval(timerInterval);
-
-    let score = 0;
-    activeExamQuestions.forEach((q, idx) => {
-      const selected = document.querySelector(`input[name="q_${idx}"]:checked`);
-      if (selected && parseInt(selected.value) === q.newAnsIndex) {
-        score++;
-      }
-    });
-
-    const total = activeExamQuestions.length;
-    const percent = Math.round((score / total) * 100);
-    const status = percent >= 33 ? "PASS" : "FAIL";
-
-    const resultRecord = {
-      ...currentStudent,
-      score,
-      total,
-      percent,
-      status,
-      date: new Date().toLocaleDateString("en-IN"),
-      timestamp: Date.now()
+  <script>
+    // ==================== DEFAULT BILINGUAL NCVT QUESTION BANKS ====================
+    const DEFAULT_QUESTIONS = {
+      "1st Year": [
+        { subject: "Trade Theory", en: "What is the least count of a Metric Outside Micrometer?", od: "ମେଟ୍ରିକ୍ ଆଉଟସାଇଡ୍ ମାଇକ୍ରୋମିଟରର ସର୍ବନିମ୍ନ ମାପ (Least Count) କେତେ?", opts: ["0.01 mm", "0.02 mm", "0.05 mm", "0.10 mm"], ans: 0 },
+        { subject: "Trade Theory", en: "Which file is used for filing narrow grooves and angles above 10°?", od: "୧୦ ଡିଗ୍ରୀରୁ ଅଧିକ କୋଣ ଏବଂ ସରୁ ଖାଲ ଫାଇଲ୍ କରିବା ପାଇଁ କେଉଁ ଫାଇଲ୍ ବ୍ୟବହୃତ ହୁଏ?", opts: ["Square file", "Half round file", "Triangular file", "Knife edge file"], ans: 3 },
+        { subject: "Trade Theory", en: "What is the standard point angle of a general purpose twist drill?", od: "ସାଧାରଣ କାର୍ଯ୍ୟ ପାଇଁ ବ୍ୟବହୃତ ଟ୍ୱିଷ୍ଟ ଡ୍ରିଲର ପଏଣ୍ଟ ଆଙ୍ଗଲ୍ କେତେ?", opts: ["90°", "118°", "135°", "60°"], ans: 1 },
+        { subject: "WCS", en: "What is the value of 1 Inch in millimeters?", od: "୧ ଇଞ୍ଚ କେତେ ମିଲିମିଟର ସହ ସମାନ?", opts: ["2.54 mm", "25.4 mm", "254 mm", "0.254 mm"], ans: 1 },
+        { subject: "WCS", en: "What is the SI unit of Force?", od: "ବଳ (Force) ର SI ଏକକ କ’ଣ?", opts: ["Joule", "Watt", "Newton", "Pascal"], ans: 2 },
+        { subject: "Employability Skills", en: "Which shortcut key is used to copy selected text in a computer?", od: "କମ୍ପ୍ୟୁଟରରେ ସିଲେକ୍ଟ ହୋଇଥିବା ଟେକ୍ସଟ୍ କପି କରିବା ପାଇଁ କେଉଁ ସର୍ଟକଟ୍ କି ବ୍ୟବହୃତ ହୁଏ?", opts: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"], ans: 2 }
+      ],
+      "2nd Year": [
+        { subject: "Trade Theory", en: "Which bearing is designed to take axial thrust load as well as radial load?", od: "କେଉଁ ବିୟରିଂ ଉଭୟ ଆକ୍ସିଆଲ୍ ଥ୍ରଷ୍ଟ ଲୋଡ୍ ଏବଂ ରେଡିଆଲ୍ ଲୋଡ୍ ନେବା ପାଇଁ ତିଆରି ହୋଇଛି?", opts: ["Deep groove ball bearing", "Taper roller bearing", "Needle bearing", "Thrust ball bearing"], ans: 1 },
+        { subject: "Trade Theory", en: "What is the purpose of a keyway cut on a shaft?", od: "ଶାଫ୍ଟ ଉପରେ କି-ୱେ (Keyway) କାଟିବାର ଉଦ୍ଦେଶ୍ୟ କ’ଣ?", opts: ["Reduce weight", "Prevent relative rotation between shaft and hub", "Improve lubrication", "Increase speed"], ans: 1 },
+        { subject: "Trade Theory", en: "Which heat treatment process increases wear resistance on the surface of low carbon steel?", od: "କେଉଁ ହିଟ୍ ଟ୍ରିଟମେଣ୍ଟ ପ୍ରକ୍ରିୟା ଲୋ କାର୍ବନ ଷ୍ଟିଲର ଉପରିଭାଗକୁ କଠିନ କରେ?", opts: ["Annealing", "Normalizing", "Case Hardening", "Tempering"], ans: 2 },
+        { subject: "WCS", en: "What is the formula for Kinetic Energy?", od: "ଗତିଜ ଶକ୍ତି (Kinetic Energy) ର ସୂତ୍ର କ’ଣ?", opts: ["mgh", "1/2 mv²", "mv", "F × d"], ans: 1 },
+        { subject: "WCS", en: "If the diameter of a circle is 14 cm, what is its area? (π = 22/7)", od: "ଯଦି ଏକ ବୃତ୍ତର ବ୍ୟାସ ୧୪ ସେ.ମି. ହୁଏ, ତେବେ ଏହାର କ୍ଷେତ୍ରଫଳ କେତେ?", opts: ["154 cm²", "44 cm²", "616 cm²", "88 cm²"], ans: 0 },
+        { subject: "Employability Skills", en: "What does 'SWOT' stand for in entrepreneurship?", od: "ଉଦ୍ୟୋଗିତାରେ 'SWOT' ର ପୂର୍ଣ୍ଣ ରୂପ କ’ଣ?", opts: ["Strengths, Weaknesses, Opportunities, Threats", "Skills, Work, Output, Time", "Sales, Wealth, Operations, Trade", "System, Work, Order, Target"], ans: 0 }
+      ]
     };
 
-    db.ref("results").push(resultRecord)
-      .then(() => {
-        document.getElementById("examView").classList.add("hidden");
-        document.getElementById("resultView").classList.remove("hidden");
-        document.getElementById("resultDetails").innerHTML = `
-          <div style="background:rgba(30,41,59,0.65); padding:18px; border-radius:12px; border:1px solid var(--border-subtle);">
-            <p><strong>Trainee Name:</strong> ${resultRecord.name}</p>
-            <p><strong>Roll Number:</strong> ${resultRecord.roll}</p>
-            <p><strong>Trade & Year:</strong> ${resultRecord.trade} (${resultRecord.year} - ${resultRecord.unit})</p>
-            <p><strong>Marks Scored:</strong> <span style="color:var(--neon-cyan); font-size:1.15rem; font-weight:700;">${score} / ${total} (${percent}%)</span></p>
-            <p><strong>Final Status:</strong> <span class="badge ${status === 'PASS' ? 'badge-pass' : 'badge-fail'}">${status}</span></p>
-            <p style="color:#34d399; font-size:0.84rem; margin-top:10px;">Live synced to Swagat ITI Instructor Cloud Server.</p>
-          </div>
-        `;
-      })
-      .catch((err) => {
-        alert("Cloud sync error: " + err.message);
-      });
-  }
+    // ==================== STATE & STORAGE ====================
+    const INSTRUCTOR_PIN = "Swagat@2008";
+    let questionBanks = JSON.parse(localStorage.getItem("swagat_qb_v2")) || DEFAULT_QUESTIONS;
+    let resultsData = JSON.parse(localStorage.getItem("swagat_results_v2")) || [];
+    let portalSettings = JSON.parse(localStorage.getItem("swagat_settings_v2")) || {
+      examLive: true,
+      showKey: true,
+      duration: 60,
+      firebaseUrl: ""
+    };
 
-  function resetToHome() {
-    document.getElementById("resultView").classList.add("hidden");
-    document.getElementById("regView").classList.remove("hidden");
-  }
+    let currentExam = null;
+    let timerInterval = null;
 
-  // INSTRUCTOR AUTH (PIN: Swagat@2008)
-  function toggleInstructorModal() {
-    const modal = document.getElementById("pinModal");
-    modal.classList.toggle("hidden");
-    document.getElementById("instructorPinInput").value = "";
-    if (!modal.classList.contains("hidden")) {
-      document.getElementById("instructorPinInput").focus();
-    }
-  }
-
-  function verifyPin() {
-    const pin = document.getElementById("instructorPinInput").value.trim();
-    if (pin === "Swagat@2008") {
-      document.getElementById("pinModal").classList.add("hidden");
-      document.getElementById("regView").classList.add("hidden");
-      document.getElementById("examView").classList.add("hidden");
-      document.getElementById("resultView").classList.add("hidden");
-      document.getElementById("instructorView").classList.remove("hidden");
-      renderResultsTable();
-      renderQuestionsList();
-    } else {
-      alert("Invalid Instructor Security PIN!");
-    }
-  }
-
-  function logoutInstructor() {
-    document.getElementById("instructorView").classList.add("hidden");
-    document.getElementById("regView").classList.remove("hidden");
-  }
-
-  function switchTab(tab) {
-    document.getElementById("resultsTab").classList.toggle("hidden", tab !== "results");
-    document.getElementById("bulkTab").classList.toggle("hidden", tab !== "bulk");
-    document.getElementById("singleTab").classList.toggle("hidden", tab !== "single");
-
-    document.getElementById("tabResBtn").classList.toggle("active", tab === "results");
-    document.getElementById("tabBulkBtn").classList.toggle("active", tab === "bulk");
-    document.getElementById("tabSingleBtn").classList.toggle("active", tab === "single");
-  }
-
-  // RESULTS TABLE & STATS
-  function getFilteredResults() {
-    const fTrade = document.getElementById("filterTrade").value;
-    const fYear = document.getElementById("filterYear").value;
-    const fMonth = document.getElementById("filterMonth").value;
-
-    return liveResults.filter(r =>
-      (fTrade === "ALL" || r.trade === fTrade) &&
-      (fYear === "ALL" || r.year === fYear) &&
-      (!fMonth || r.month === fMonth)
-    );
-  }
-
-  function renderResultsTable() {
-    const tbody = document.getElementById("resultsTableBody");
-    const filtered = getFilteredResults();
-
-    const total = filtered.length;
-    const passCount = filtered.filter(r => r.status === "PASS").length;
-    const failCount = total - passCount;
-    const avgPct = total > 0 ? Math.round(filtered.reduce((acc, r) => acc + (r.percent || 0), 0) / total) : 0;
-
-    document.getElementById("statsSummary").innerHTML = `
-      <div class="stat-box"><span>Total Attempts</span><strong>${total}</strong></div>
-      <div class="stat-box"><span>Passed</span><strong style="color:#34d399;">${passCount}</strong></div>
-      <div class="stat-box"><span>Failed</span><strong style="color:#f87171;">${failCount}</strong></div>
-      <div class="stat-box"><span>Avg Score</span><strong style="color:#a855f7;">${avgPct}%</strong></div>
-    `;
-
-    if (total === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No student submissions found for selected filters.</td></tr>`;
-      return;
+    // ==================== INITIALIZATION ====================
+    function initApp() {
+      applySettingsToUI();
+      syncFromCloud();
     }
 
-    tbody.innerHTML = filtered.map(r => `
-      <tr>
-        <td>${r.date || "-"}</td>
-        <td><code>${r.roll}</code></td>
-        <td><strong>${r.name}</strong></td>
-        <td>${r.trade} (${r.year})</td>
-        <td>${r.unit} • ${r.month}</td>
-        <td><strong>${r.score}</strong> / ${r.total}</td>
-        <td style="color:var(--neon-cyan); font-weight:700;">${r.percent}%</td>
-        <td><span class="badge ${r.status === 'PASS' ? 'badge-pass' : 'badge-fail'}">${r.status}</span></td>
-      </tr>
-    `).join("");
-  }
+    function applySettingsToUI() {
+      document.getElementById("toggleExamLive").checked = portalSettings.examLive;
+      document.getElementById("toggleShowKey").checked = portalSettings.showKey;
+      document.getElementById("settingDuration").value = portalSettings.duration;
+      document.getElementById("firebaseDbUrl").value = portalSettings.firebaseUrl || "";
 
-  function exportCSV() {
-    const rows = getFilteredResults();
-    if (rows.length === 0) {
-      alert("No records to export.");
-      return;
-    }
-    let csv = "Date,Roll No,Trainee Name,Trade,Year,Unit,Month,Score,Total,Percentage,Status\n";
-    rows.forEach(r => {
-      csv += `"${r.date}","${r.roll}","${r.name}","${r.trade}","${r.year}","${r.unit}","${r.month}",${r.score},${r.total},${r.percent}%,${r.status}\n`;
-    });
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `Swagat_ITI_CBT_Marksheet_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-  }
+      const badge = document.getElementById("examLiveBadge");
+      const notice = document.getElementById("examLockedNotice");
+      const form = document.getElementById("loginForm");
 
-  function clearAllResults() {
-    if (confirm("Delete ALL student results permanently from cloud?")) {
-      db.ref("results").remove();
-    }
-  }
-
-  // BULK AI QUESTION PARSER & CLOUD UPLOADER
-  function fillSampleBulk() {
-    document.getElementById("bulkInputArea").value =
-`Q: Which micrometer part ensures uniform measuring pressure? | A: Thimble | B: Ratchet stop | C: Spindle | D: Anvil | ANS: B
-Q: What is the least count of a standard metric Vernier Caliper? | A: 0.01 mm | B: 0.02 mm | C: 0.05 mm | D: 0.10 mm | ANS: B
-Q: Which file is used for finishing a job close to exact size? | A: Bastard file | B: Rough file | C: Smooth file | D: Rasp file | ANS: C`;
-  }
-
-  function uploadBulkQuestions() {
-    const raw = document.getElementById("bulkInputArea").value.trim();
-    const year = document.getElementById("bulkYear").value;
-    const trade = document.getElementById("bulkTrade").value;
-    const unit = document.getElementById("bulkUnit").value;
-
-    if (!raw) {
-      alert("Please paste questions in the box first.");
-      return;
+      if (portalSettings.examLive) {
+        badge.textContent = "EXAM PORTAL: LIVE";
+        badge.style.background = "#d1fae5";
+        badge.style.color = "#065f46";
+        notice.classList.add("hidden");
+        form.classList.remove("hidden");
+      } else {
+        badge.textContent = "EXAM PORTAL: LOCKED";
+        badge.style.background = "#fee2e2";
+        badge.style.color = "#991b1b";
+        notice.classList.remove("hidden");
+        form.classList.add("hidden");
+      }
     }
 
-    let parsedList = [];
+    function savePortalSettings() {
+      portalSettings.examLive = document.getElementById("toggleExamLive").checked;
+      portalSettings.showKey = document.getElementById("toggleShowKey").checked;
+      portalSettings.duration = parseInt(document.getElementById("settingDuration").value) || 60;
+      portalSettings.firebaseUrl = document.getElementById("firebaseDbUrl").value.trim().replace(/\/$/, "");
+      localStorage.setItem("swagat_settings_v2", JSON.stringify(portalSettings));
+      applySettingsToUI();
+      syncFromCloud();
+    }
 
-    // Try JSON format first
-    if (raw.startsWith("[")) {
+    // ==================== CLOUD SYNC (FIREBASE REST) ====================
+    async function pushResultToCloud(record) {
+      if (!portalSettings.firebaseUrl) return;
       try {
-        const arr = JSON.parse(raw);
-        arr.forEach(item => {
-          if (item.q && Array.isArray(item.opts) && item.opts.length === 4 && typeof item.ans === "number") {
-            parsedList.push({
-              year: item.year || year,
-              trade: item.trade || trade,
-              unit: item.unit || unit,
-              q: String(item.q).trim(),
-              opts: item.opts.map(o => String(o).trim()),
-              ans: item.ans
-            });
-          }
+        await fetch(`${portalSettings.firebaseUrl}/cbt_results/${record.id}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(record)
         });
-      } catch (e) {
-        alert("Invalid JSON format: " + e.message);
+      } catch (e) { console.warn("Cloud push failed, saved locally.", e); }
+    }
+
+    async function syncFromCloud() {
+      const statusEl = document.getElementById("syncStatusText");
+      if (!portalSettings.firebaseUrl) {
+        statusEl.textContent = "LOCAL + READY";
         return;
       }
-    } else {
-      // Pipe-separated line parser: Q: ... | A: ... | B: ... | C: ... | D: ... | ANS: A/B/C/D
-      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-      const ansMap = { "A": 0, "B": 1, "C": 2, "D": 3, "0": 0, "1": 1, "2": 2, "3": 3 };
-
-      lines.forEach(line => {
-        const parts = line.split("|").map(p => p.trim());
-        if (parts.length >= 6) {
-          const qText = parts[0].replace(/^Q\d*[:.)-]\s*/i, "").trim();
-          const optA = parts[1].replace(/^A[:.)-]?\s*/i, "").trim();
-          const optB = parts[2].replace(/^B[:.)-]?\s*/i, "").trim();
-          const optC = parts[3].replace(/^C[:.)-]?\s*/i, "").trim();
-          const optD = parts[4].replace(/^D[:.)-]?\s*/i, "").trim();
-          const ansRaw = parts[5].replace(/^(ANS|ANSWER)[:.)-]?\s*/i, "").trim().toUpperCase();
-
-          if (qText && optA && optB && optC && optD && ansMap.hasOwnProperty(ansRaw)) {
-            parsedList.push({
-              year,
-              trade,
-              unit,
-              q: qText,
-              opts: [optA, optB, optC, optD],
-              ans: ansMap[ansRaw]
-            });
-          }
+      try {
+        const res = await fetch(`${portalSettings.firebaseUrl}/cbt_results.json`);
+        const data = await res.json();
+        if (data) {
+          resultsData = Object.values(data);
+          localStorage.setItem("swagat_results_v2", JSON.stringify(resultsData));
         }
+        statusEl.textContent = "CLOUD LIVE";
+        renderResultsTable();
+      } catch (e) {
+        statusEl.textContent = "OFFLINE MODE";
+      }
+    }
+
+    // ==================== VIEW NAVIGATION ====================
+    function showView(viewId) {
+      ["studentLoginView", "examView", "resultView", "instructorView"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
       });
+      document.getElementById(viewId).classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    if (parsedList.length === 0) {
-      alert("Could not parse any valid questions. Please check the format shown in the guide above.");
-      return;
+    // ==================== START EXAM & SHUFFLING ====================
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
     }
 
-    const updates = {};
-    parsedList.forEach(qObj => {
-      const newKey = db.ref("questions").push().key;
-      updates["questions/" + newKey] = qObj;
+    function startExam(e) {
+      e.preventDefault();
+      if (!portalSettings.examLive) {
+        alert("Exam is currently locked by the Instructor.");
+        return;
+      }
+
+      const name = document.getElementById("stuName").value.trim();
+      const roll = document.getElementById("stuRoll").value.trim().toUpperCase();
+      const trade = document.getElementById("stuTrade").value;
+      const year = document.getElementById("stuYear").value;
+      const month = document.getElementById("stuMonth").value;
+      const lang = document.getElementById("stuLang").value;
+
+      const rawBank = questionBanks[year] || [];
+      if (rawBank.length === 0) {
+        alert("No questions configured for " + year);
+        return;
+      }
+
+      // Shuffle questions and shuffle options per question
+      const shuffledQs = shuffleArray(rawBank).map((q, idx) => {
+        const indexedOpts = q.opts.map((text, i) => ({ text, isCorrect: i === q.ans }));
+        const mixedOpts = shuffleArray(indexedOpts);
+        return {
+          qIndex: idx,
+          subject: q.subject,
+          en: q.en,
+          od: q.od || "",
+          opts: mixedOpts.map(o => o.text),
+          correctIdx: mixedOpts.findIndex(o => o.isCorrect),
+          userAns: null,
+          status: "not-visited" // not-visited | not-answered | answered | review
+        };
+      });
+
+      currentExam = {
+        name, roll, trade, year, month, lang,
+        questions: shuffledQs,
+        filteredIndices: shuffledQs.map((_, i) => i),
+        currentPos: 0,
+        warnings: 0,
+        secondsLeft: portalSettings.duration * 60
+      };
+
+      currentExam.questions[0].status = "not-answered";
+      document.getElementById("dispStudentInfo").textContent = `${name} • ${roll}`;
+      document.getElementById("dispTradeYear").textContent = `${trade} • ${year} • ${month} 2026`;
+      document.getElementById("warningBadge").textContent = "Warnings: 0/3";
+
+      showView("examView");
+      renderQuestion();
+      renderPalette();
+      startTimer();
+    }
+
+    // ==================== ANTI-CHEATING: TAB SWITCH DETECTION ====================
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && currentExam && !document.getElementById("examView").classList.contains("hidden")) {
+        currentExam.warnings += 1;
+        document.getElementById("warningBadge").textContent = `Warnings: ${currentExam.warnings}/3`;
+        if (currentExam.warnings >= 3) {
+          alert("MAXIMUM WARNINGS EXCEEDED! Your exam is being auto-submitted due to tab switching.");
+          finalizeExam(true);
+        } else {
+          alert(`ANTI-CHEATING WARNING (${currentExam.warnings}/3): Do NOT switch tabs or minimize the browser during the exam!`);
+        }
+      }
     });
 
-    db.ref().update(updates)
-      .then(() => {
-        document.getElementById("bulkInputArea").value = "";
-        alert(`Success! ${parsedList.length} questions uploaded to Cloud and synced to all student phones!`);
-        switchTab("single");
-      })
-      .catch(err => {
-        alert("Failed to upload bulk questions: " + err.message);
+    // ==================== EXAM ENGINE ====================
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!currentExam) return;
+        currentExam.secondsLeft--;
+        const mins = String(Math.floor(currentExam.secondsLeft / 60)).padStart(2, "0");
+        const secs = String(currentExam.secondsLeft % 60).padStart(2, "0");
+        document.getElementById("examTimer").textContent = `${mins}:${secs}`;
+        if (currentExam.secondsLeft <= 0) {
+          clearInterval(timerInterval);
+          alert("Time is up! Submitting your exam automatically.");
+          finalizeExam(true);
+        }
+      }, 1000);
+    }
+
+    function toggleExamLang() {
+      if (!currentExam) return;
+      currentExam.lang = currentExam.lang === "en" ? "bi" : "en";
+      renderQuestion();
+    }
+
+    function filterBySubject(sub) {
+      document.querySelectorAll(".sub-tab").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+
+      if (sub === "ALL") {
+        currentExam.filteredIndices = currentExam.questions.map((_, i) => i);
+      } else {
+        currentExam.filteredIndices = currentExam.questions
+          .map((q, i) => (q.subject === sub ? i : -1))
+          .filter(i => i !== -1);
+      }
+      if (currentExam.filteredIndices.length > 0) {
+        currentExam.currentPos = 0;
+        const realIdx = currentExam.filteredIndices[0];
+        if (currentExam.questions[realIdx].status === "not-visited") {
+          currentExam.questions[realIdx].status = "not-answered";
+        }
+        renderQuestion();
+        renderPalette();
+      } else {
+        alert("No questions in this subject section.");
+      }
+    }
+
+    function renderQuestion() {
+      const realIdx = currentExam.filteredIndices[currentExam.currentPos];
+      const q = currentExam.questions[realIdx];
+
+      document.getElementById("qSubjectBadge").textContent = q.subject;
+      document.getElementById("qCounter").textContent = `Question ${realIdx + 1} of ${currentExam.questions.length}`;
+
+      let qHtml = `<div>${q.en}</div>`;
+      if (currentExam.lang === "bi" && q.od) {
+        qHtml += `<div style="margin-top:8px; color:#0052cc; font-size:0.95rem;">${q.od}</div>`;
+      }
+      document.getElementById("qTextDisplay").innerHTML = qHtml;
+
+      const keys = ["A", "B", "C", "D"];
+      const optBox = document.getElementById("optionsContainer");
+      optBox.innerHTML = "";
+      q.opts.forEach((optText, idx) => {
+        const div = document.createElement("div");
+        div.className = "option-item" + (q.userAns === idx ? " selected" : "");
+        div.onclick = () => selectOption(idx);
+        div.innerHTML = `<span class="opt-key">${keys[idx]}</span><span>${optText}</span>`;
+        optBox.appendChild(div);
       });
-  }
-
-  // SINGLE QUESTION MANAGER
-  function addQuestionToCloud() {
-    const year = document.getElementById("qYear").value;
-    const trade = document.getElementById("qTrade").value;
-    const unit = document.getElementById("qUnit").value;
-    const q = document.getElementById("qText").value.trim();
-    const opts = [
-      document.getElementById("optA").value.trim(),
-      document.getElementById("optB").value.trim(),
-      document.getElementById("optC").value.trim(),
-      document.getElementById("optD").value.trim()
-    ];
-    const ans = parseInt(document.getElementById("qCorrect").value);
-
-    if (!q || opts.some(o => !o)) {
-      alert("Please fill question text and all 4 options.");
-      return;
     }
 
-    db.ref("questions").push({ year, trade, unit, q, opts, ans })
-      .then(() => {
-        document.getElementById("qText").value = "";
-        document.getElementById("optA").value = "";
-        document.getElementById("optB").value = "";
-        document.getElementById("optC").value = "";
-        document.getElementById("optD").value = "";
-        alert("Question saved to cloud!");
+    function selectOption(optIdx) {
+      const realIdx = currentExam.filteredIndices[currentExam.currentPos];
+      const q = currentExam.questions[realIdx];
+      q.userAns = optIdx;
+      q.status = "answered";
+      renderQuestion();
+      renderPalette();
+    }
+
+    function clearResponse() {
+      const realIdx = currentExam.filteredIndices[currentExam.currentPos];
+      const q = currentExam.questions[realIdx];
+      q.userAns = null;
+      q.status = "not-answered";
+      renderQuestion();
+      renderPalette();
+    }
+
+    function markForReview() {
+      const realIdx = currentExam.filteredIndices[currentExam.currentPos];
+      const q = currentExam.questions[realIdx];
+      q.status = "review";
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      if (currentExam.currentPos < currentExam.filteredIndices.length - 1) {
+        currentExam.currentPos++;
+        const realIdx = currentExam.filteredIndices[currentExam.currentPos];
+        if (currentExam.questions[realIdx].status === "not-visited") {
+          currentExam.questions[realIdx].status = "not-answered";
+        }
+        renderQuestion();
+        renderPalette();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentExam.currentPos > 0) {
+        currentExam.currentPos--;
+        renderQuestion();
+        renderPalette();
+      }
+    }
+
+    function jumpToQuestion(realIdx) {
+      const posInFilter = currentExam.filteredIndices.indexOf(realIdx);
+      if (posInFilter !== -1) {
+        currentExam.currentPos = posInFilter;
+      } else {
+        currentExam.filteredIndices = currentExam.questions.map((_, i) => i);
+        currentExam.currentPos = realIdx;
+      }
+      if (currentExam.questions[realIdx].status === "not-visited") {
+        currentExam.questions[realIdx].status = "not-answered";
+      }
+      renderQuestion();
+      renderPalette();
+    }
+
+    function renderPalette() {
+      const grid = document.getElementById("questionPalette");
+      grid.innerHTML = "";
+      const activeRealIdx = currentExam.filteredIndices[currentExam.currentPos];
+
+      currentExam.questions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        btn.className = `pal-btn ${q.status}` + (idx === activeRealIdx ? " current" : "");
+        btn.textContent = idx + 1;
+        btn.onclick = () => jumpToQuestion(idx);
+        grid.appendChild(btn);
       });
-  }
-
-  function deleteCloudQuestion(id) {
-    if (confirm("Delete this question from cloud?")) {
-      db.ref("questions/" + id).remove();
-    }
-  }
-
-  function clearAllCloudQuestions() {
-    if (confirm("Delete ALL custom cloud questions? (Built-in 25 questions will remain as fallback).")) {
-      db.ref("questions").remove();
-    }
-  }
-
-  function renderQuestionsList() {
-    const container = document.getElementById("cloudQuestionsList");
-    const yearFilter = document.getElementById("viewQYearFilter").value;
-    const list = liveQuestions.filter(item => yearFilter === "ALL" || item.year === yearFilter);
-
-    document.getElementById("qCountBadge").innerText = list.length;
-
-    if (list.length === 0) {
-      container.innerHTML = `<p style="color:#94a3b8;">No custom cloud questions found (currently serving 25 built-in Employability Skills questions).</p>`;
-      return;
     }
 
-    container.innerHTML = list.map((item, i) => `
-      <div style="border:1px solid var(--border-subtle); padding:14px; border-radius:10px; margin-bottom:10px; background:rgba(30,41,59,0.55);">
-        <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
-          <strong style="color:#f8fafc;">Q${i + 1}. <span style="color:var(--neon-cyan);">[${item.year} • ${item.trade} • ${item.unit}]</span> ${item.q}</strong>
-          <button class="btn btn-danger btn-sm" onclick="deleteCloudQuestion('${item.id}')">Delete</button>
-        </div>
-        <div style="font-size:0.84rem; color:#cbd5e1; margin-top:8px;">
-          A) ${item.opts[0]} &nbsp;|&nbsp; B) ${item.opts[1]} &nbsp;|&nbsp; C) ${item.opts[2]} &nbsp;|&nbsp; D) ${item.opts[3]}
-          <br/><strong style="color:#34d399;">Correct Answer: ${item.opts[item.ans]}</strong>
-        </div>
-      </div>
-    `).join("");
-  }
-</script>
+    function confirmSubmitExam() {
+      const answeredCount = currentExam.questions.filter(q => q.userAns !== null).length;
+      if (confirm(`You have answered ${answeredCount} out of ${currentExam.questions.length} questions. Submit final exam now?`)) {
+        finalizeExam(false);
+      }
+    }
+
+    function finalizeExam(autoSubmitted) {
+      clearInterval(timerInterval);
+      let correct = 0;
+      const subStats = {
+        "Trade Theory": { total: 0, correct: 0 },
+        "WCS": { total: 0, correct: 0 },
+        "Employability Skills": { total: 0, correct: 0 }
+      };
+
+      currentExam.questions.forEach(q => {
+        if (!subStats[q.subject]) subStats[q.subject] = { total: 0, correct: 0 };
+        subStats[q.subject].total++;
+        if (q.userAns === q.correctIdx) {
+          correct++;
+          subStats[q.subject].correct++;
+        }
+      });
+
+      const total = currentExam.questions.length;
+      const percent = Math.round((correct / total) * 100);
+      const passed = percent >= 33;
+
+      const record = {
+        id: `${currentExam.roll}_${Date.now()}`,
+        date: new Date().toLocaleDateString("en-IN"),
+        roll: currentExam.roll,
+        name: currentExam.name,
+        trade: currentExam.trade,
+        year: currentExam.year,
+        month: currentExam.month,
+        correct,
+        total,
+        percent,
+        passed,
+        warnings: currentExam.warnings,
+        subStats,
+        questionsSnapshot: currentExam.questions
+      };
+
+      resultsData.unshift(record);
+      localStorage.setItem("swagat_results_v2", JSON.stringify(resultsData));
+      pushResultToCloud(record);
+
+      displayMarksheet(record);
+      currentExam = null;
+    }
+
+    function displayMarksheet(rec) {
+      document.getElementById("resName").textContent = rec.name;
+      document.getElementById("resRoll").textContent = rec.roll;
+      document.getElementById("resTradeYear").textContent = `${rec.trade} (${rec.year})`;
+      document.getElementById("resDate").textContent = `${rec.month} • ${rec.date}`;
+      document.getElementById("resScore").textContent = `${rec.correct}/${rec.total}`;
+      document.getElementById("resPercent").textContent = `${rec.percent}%`;
+      document.getElementById("resStatus").innerHTML = rec.passed
+        ? `<span style="color:#059669;">PASS</span>`
+        : `<span style="color:#dc2626;">FAIL</span>`;
+      document.getElementById("resWarnings").textContent = rec.warnings || 0;
+
+      // Subject Breakdown
+      const tbody = document.getElementById("subjectBreakdownBody");
+      tbody.innerHTML = "";
+      Object.entries(rec.subStats || {}).forEach(([sub, st]) => {
+        if (st.total === 0) return;
+        const acc = Math.round((st.correct / st.total) * 100);
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${sub}</strong></td>
+            <td>${st.total}</td>
+            <td>${st.correct}</td>
+            <td>${st.correct * 2} / ${st.total * 2}</td>
+            <td>${acc}%</td>
+          </tr>
+        `;
+      });
+
+      // Answer Key Review
+      const keySec = document.getElementById("answerKeySection");
+      const keyList = document.getElementById("answerKeyList");
+      keyList.innerHTML = "";
+
+      if (portalSettings.showKey && rec.questionsSnapshot) {
+        keySec.classList.remove("hidden");
+        rec.questionsSnapshot.forEach((q, i) => {
+          const isRight = q.userAns === q.correctIdx;
+          const userText = q.userAns !== null ? q.opts[q.userAns] : "Not Answered";
+          const rightText = q.opts[q.correctIdx];
+          keyList.innerHTML += `
+            <div style="padding:12px; border-radius:10px; border:1px solid ${isRight ? '#86efac' : '#fca5a5'}; background:${isRight ? '#f0fdf4' : '#fef2f2'}; font-size:0.84rem;">
+              <div style="font-weight:700;">Q${i + 1}. ${q.en}</div>
+              <div style="margin-top:4px;">Your Answer: <strong>${userText}</strong> | Correct Answer: <strong style="color:#059669;">${rightText}</strong></div>
+            </div>
+          `;
+        });
+      } else {
+        keySec.classList.add("hidden");
+      }
+
+      showView("resultView");
+    }
+
+    // ==================== INSTRUCTOR AUTH & DASHBOARD ====================
+    function openInstructorAuth() {
+      document.getElementById("instructorPinInput").value = "";
+      document.getElementById("pinModal").classList.remove("hidden");
+      document.getElementById("instructorPinInput").focus();
+    }
+    function closePinModal() { document.getElementById("pinModal").classList.add("hidden"); }
+
+    function verifyInstructorPin() {
+      const pin = document.getElementById("instructorPinInput").value;
+      if (pin === INSTRUCTOR_PIN) {
+        closePinModal();
+        showView("instructorView");
+        renderResultsTable();
+        renderQuestionList();
+      } else {
+        alert("Incorrect Instructor PIN!");
+      }
+    }
+
+    function logoutInstructor() { showView("studentLoginView"); }
+
+    function switchInstructorTab(tabId) {
+      ["resultsTab", "qbankTab", "settingsTab"].forEach(id => document.getElementById(id).classList.add("hidden"));
+      document.getElementById(tabId).classList.remove("hidden");
+    }
+
+    function getFilteredResults() {
+      const q = document.getElementById("filterSearch").value.trim().toLowerCase();
+      const yr = document.getElementById("filterYear").value;
+      const mo = document.getElementById("filterMonth").value;
+      const tr = document.getElementById("filterTrade").value;
+      const st = document.getElementById("filterStatus").value;
+
+      return resultsData.filter(r => {
+        if (q && !r.roll.toLowerCase().includes(q) && !r.name.toLowerCase().includes(q)) return false;
+        if (yr !== "ALL" && r.year !== yr) return false;
+        if (mo !== "ALL" && r.month !== mo) return false;
+        if (tr !== "ALL" && r.trade !== tr) return false;
+        if (st === "PASS" && !r.passed) return false;
+        if (st === "FAIL" && r.passed) return false;
+        return true;
+      });
+    }
+
+    function renderResultsTable() {
+      const list = getFilteredResults();
+      const tbody = document.getElementById("resultsTableBody");
+      tbody.innerHTML = "";
+
+      let passed = 0, sumPct = 0;
+      list.forEach((r, idx) => {
+        if (r.passed) passed++;
+        sumPct += r.percent;
+
+        const tt = r.subStats?.["Trade Theory"] ? `${r.subStats["Trade Theory"].correct}/${r.subStats["Trade Theory"].total}` : "-";
+        const wcs = r.subStats?.["WCS"] ? `${r.subStats["WCS"].correct}/${r.subStats["WCS"].total}` : "-";
+        const es = r.subStats?.["Employability Skills"] ? `${r.subStats["Employability Skills"].correct}/${r.subStats["Employability Skills"].total}` : "-";
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${r.date}</td>
+            <td style="font-family:'JetBrains Mono',monospace; font-weight:700; color:#0052cc;">${r.roll}</td>
+            <td><strong>${r.name}</strong></td>
+            <td>${r.trade} (${r.year})</td>
+            <td>${r.month}</td>
+            <td>${tt} | ${wcs} | ${es}</td>
+            <td><strong>${r.percent}%</strong> (${r.correct}/${r.total})</td>
+            <td>${r.passed ? '<span class="pill-pass">PASS</span>' : '<span class="pill-fail">FAIL</span>'}</td>
+            <td>
+              <button class="btn btn-outline btn-sm" onclick="viewRecordMarksheet('${r.id}')">Marksheet</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById("statTotal").textContent = list.length;
+      document.getElementById("statPassed").textContent = passed;
+      document.getElementById("statFailed").textContent = list.length - passed;
+      document.getElementById("statAvg").textContent = list.length ? Math.round(sumPct / list.length) + "%" : "0%";
+    }
+
+    function viewRecordMarksheet(id) {
+      const rec = resultsData.find(r => r.id === id);
+      if (rec) displayMarksheet(rec);
+    }
+
+    function exportFilteredCSV() {
+      const list = getFilteredResults();
+      if (!list.length) { alert("No records to export."); return; }
+      const headers = ["Date", "Roll No", "Trainee Name", "Trade", "Year", "Month", "Correct", "Total", "Percentage", "Status", "Warnings"];
+      const rows = list.map(r => [r.date, r.roll, `"${r.name}"`, r.trade, r.year, r.month, r.correct, r.total, r.percent + "%", r.passed ? "PASS" : "FAIL", r.warnings || 0]);
+      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("
+");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Swagat_ITI_CBT_Results_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    function clearAllResults() {
+      if (confirm("Are you sure you want to delete ALL saved results?")) {
+        resultsData = [];
+        localStorage.setItem("swagat_results_v2", JSON.stringify([]));
+        renderResultsTable();
+      }
+    }
+
+    // ==================== QUESTION BANK MANAGER ====================
+    function renderQuestionList() {
+      const yr = document.getElementById("qbYearSelect").value;
+      const list = questionBanks[yr] || [];
+      document.getElementById("qbCount").textContent = list.length;
+      const box = document.getElementById("qbListContainer");
+      box.innerHTML = "";
+
+      list.forEach((q, idx) => {
+        box.innerHTML += `
+          <div style="padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; background:#f8fafc; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+            <div style="font-size:0.83rem;">
+              <span class="badge">${q.subject}</span> <strong>Q${idx + 1}:</strong> ${q.en}
+              <div style="color:#059669; font-size:0.76rem; margin-top:2px;">Answer: ${q.opts[q.ans]}</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteQuestion('${yr}', ${idx})">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    function deleteQuestion(yr, idx) {
+      questionBanks[yr].splice(idx, 1);
+      localStorage.setItem("swagat_qb_v2", JSON.stringify(questionBanks));
+      renderQuestionList();
+    }
+
+    function importBulkQuestions() {
+      const yr = document.getElementById("qbYearSelect").value;
+      const raw = document.getElementById("bulkPasteBox").value.trim();
+      if (!raw) return;
+
+      const lines = raw.split("
+");
+      const mapAns = { A: 0, B: 1, C: 2, D: 3 };
+      let added = 0;
+
+      lines.forEach(line => {
+        const parts = line.split("|").map(s => s.trim());
+        if (parts.length >= 7) {
+          const hasOdia = parts.length >= 8;
+          const subject = parts[0] || "Trade Theory";
+          const en = parts[1];
+          const od = hasOdia ? parts[2] : "";
+          const opts = hasOdia ? [parts[3], parts[4], parts[5], parts[6]] : [parts[2], parts[3], parts[4], parts[5]];
+          const ansChar = (hasOdia ? parts[7] : parts[6]).toUpperCase();
+          const ans = mapAns[ansChar] !== undefined ? mapAns[ansChar] : 0;
+
+          questionBanks[yr].push({ subject, en, od, opts, ans });
+          added++;
+        }
+      });
+
+      localStorage.setItem("swagat_qb_v2", JSON.stringify(questionBanks));
+      document.getElementById("bulkPasteBox").value = "";
+      renderQuestionList();
+      alert(`${added} questions added to ${yr} bank!`);
+    }
+
+    function handleCSVQuestionUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const yr = document.getElementById("qbYearSelect").value;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const lines = e.target.result.split("
+").slice(1);
+        let count = 0;
+        lines.forEach(line => {
+          const cols = line.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+          if (cols.length >= 8 && cols[1]) {
+            questionBanks[yr].push({
+              subject: cols[0] || "Trade Theory",
+              en: cols[1],
+              od: cols[2] || "",
+              opts: [cols[3], cols[4], cols[5], cols[6]],
+              ans: parseInt(cols[7]) || 0
+            });
+            count++;
+          }
+        });
+        localStorage.setItem("swagat_qb_v2", JSON.stringify(questionBanks));
+        renderQuestionList();
+        alert(`Imported ${count} questions from CSV into ${yr}!`);
+      };
+      reader.readAsText(file);
+    }
+
+    function resetDefaultQuestions() {
+      if (confirm("Reset question banks to default NCVT questions?")) {
+        questionBanks = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
+        localStorage.setItem("swagat_qb_v2", JSON.stringify(questionBanks));
+        renderQuestionList();
+      }
+    }
+
+    initApp();
+  </script>
 </body>
 </html>
-Displaying swagat_iti_cbt_neon_final.txt.
