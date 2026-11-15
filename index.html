@@ -886,6 +886,7 @@
     // ==================== INITIALIZATION ====================
     function initApp() {
       applySettingsToUI();
+      pushSettingsToCloud();
       syncFromCloud();
     }
 
@@ -921,10 +922,11 @@
       portalSettings.firebaseUrl = document.getElementById("firebaseDbUrl").value.trim().replace(/\/$/, "");
       localStorage.setItem("swagat_settings_v3", JSON.stringify(portalSettings));
       applySettingsToUI();
+      pushSettingsToCloud();
       syncFromCloud();
     }
 
-    // ==================== CLOUD SYNC (FIREBASE REST) ====================
+    // ==================== CLOUD SYNC (FIREBASE REST FOR RESULTS + QUESTION BANKS + SETTINGS) ====================
     async function pushResultToCloud(record) {
       if (!portalSettings.firebaseUrl) return;
       try {
@@ -936,6 +938,37 @@
       } catch (e) { console.warn("Cloud push failed, saved locally.", e); }
     }
 
+    async function pushQuestionBanksToCloud() {
+      if (!portalSettings.firebaseUrl) return;
+      try {
+        const res = await fetch(`${portalSettings.firebaseUrl}/cbt_question_banks.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(questionBanks)
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        document.getElementById("syncStatusText").textContent = "CLOUD SYNCED";
+      } catch (e) {
+        console.error("Question Bank cloud sync failed:", e);
+        alert("Warning: Questions saved on this device, but Firebase Cloud sync failed! Check Firebase Rules (.read/.write = true).");
+      }
+    }
+
+    async function pushSettingsToCloud() {
+      if (!portalSettings.firebaseUrl) return;
+      try {
+        await fetch(`${portalSettings.firebaseUrl}/cbt_portal_settings.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            examLive: portalSettings.examLive,
+            showKey: portalSettings.showKey,
+            duration: portalSettings.duration
+          })
+        });
+      } catch (e) { console.warn("Settings sync failed", e); }
+    }
+
     async function syncFromCloud() {
       const statusEl = document.getElementById("syncStatusText");
       if (!portalSettings.firebaseUrl) {
@@ -943,14 +976,36 @@
         return;
       }
       try {
-        const res = await fetch(`${portalSettings.firebaseUrl}/cbt_results.json`);
-        const data = await res.json();
-        if (data) {
-          resultsData = Object.values(data);
+        const [resResults, resQB, resSet] = await Promise.all([
+          fetch(`${portalSettings.firebaseUrl}/cbt_results.json`),
+          fetch(`${portalSettings.firebaseUrl}/cbt_question_banks.json`),
+          fetch(`${portalSettings.firebaseUrl}/cbt_portal_settings.json`)
+        ]);
+
+        const dataResults = await resResults.json();
+        if (dataResults) {
+          resultsData = Object.values(dataResults);
           localStorage.setItem("swagat_results_v3", JSON.stringify(resultsData));
         }
+
+        const dataQB = await resQB.json();
+        if (dataQB && typeof dataQB === "object") {
+          questionBanks = { ...DEFAULT_QUESTIONS, ...dataQB };
+          localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
+        }
+
+        const dataSet = await resSet.json();
+        if (dataSet && typeof dataSet === "object") {
+          if (dataSet.examLive !== undefined) portalSettings.examLive = dataSet.examLive;
+          if (dataSet.showKey !== undefined) portalSettings.showKey = dataSet.showKey;
+          if (dataSet.duration !== undefined) portalSettings.duration = dataSet.duration;
+          localStorage.setItem("swagat_settings_v3", JSON.stringify(portalSettings));
+          applySettingsToUI();
+        }
+
         statusEl.textContent = "CLOUD LIVE";
         renderResultsTable();
+        if (document.getElementById("qbListContainer")) renderQuestionList();
       } catch (e) {
         statusEl.textContent = "OFFLINE MODE";
       }
@@ -975,8 +1030,9 @@
       return copy;
     }
 
-    function startExam(e) {
+    async function startExam(e) {
       e.preventDefault();
+      await syncFromCloud();
       if (!portalSettings.examLive) {
         alert("Exam is currently locked by the Instructor.");
         return;
@@ -1441,6 +1497,7 @@
     function deleteQuestion(key, idx) {
       questionBanks[key].splice(idx, 1);
       localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
+      pushQuestionBanksToCloud();
       renderQuestionList();
     }
 
@@ -1468,6 +1525,7 @@
       });
 
       localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
+      pushQuestionBanksToCloud();
       document.getElementById("bulkPasteBox").value = "";
       renderQuestionList();
       alert(`${added} questions added to ${key.replace("_", " ")} bank!`);
@@ -1494,6 +1552,7 @@
           }
         });
         localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
+        pushQuestionBanksToCloud();
         renderQuestionList();
         alert(`Imported ${count} questions from CSV into ${key.replace("_", " ")}!`);
       };
@@ -1504,6 +1563,7 @@
       if (confirm("Reset question banks to default NCVT questions?")) {
         questionBanks = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
         localStorage.setItem("swagat_qb_v5", JSON.stringify(questionBanks));
+        pushQuestionBanksToCloud();
         renderQuestionList();
       }
     }
