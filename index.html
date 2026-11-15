@@ -412,7 +412,7 @@
         <p>Bhawanipatna, Kalahandi • Next-Gen Live CBT Assessment Portal</p>
       </div>
       <div class="nav-actions">
-        <span class="status-pill"><span class="dot"></span> <span id="syncStatusText">CLOUD LIVE</span></span>
+        <span class="status-pill"><span class="dot"></span> <span id="syncStatusText">CONNECTING...</span></span>
         <button class="btn btn-outline btn-sm" id="btnHomeNav" onclick="showView('studentLoginView')">Trainee Exam</button>
         <button class="btn btn-primary btn-sm" id="btnInstructorNav" onclick="openInstructorAuth()">Instructor Login</button>
       </div>
@@ -428,7 +428,10 @@
           <h2 class="card-title">Trainee CBT Registration & Exam Login</h2>
           <p style="font-size:0.82rem; color:#475569;">Enter your exact NCVT Roll Number & details to begin monthly assessment.</p>
         </div>
-        <span id="examLiveBadge" class="badge" style="background:#d1fae5; color:#065f46;">EXAM PORTAL: LIVE</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="syncFromCloud(true)" title="Refresh Portal Status">↻ Refresh</button>
+          <span id="examLiveBadge" class="badge" style="background:#d1fae5; color:#065f46;">EXAM PORTAL: LIVE</span>
+        </div>
       </div>
 
       <div id="examLockedNotice" class="hidden" style="background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; padding:16px; border-radius:12px; margin-bottom:16px; font-weight:600;">
@@ -716,6 +719,7 @@
           <!-- Action Buttons -->
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
             <button class="btn btn-primary btn-sm" onclick="exportFilteredCSV()">📥 Export Filtered CSV</button>
+            <button class="btn btn-outline btn-sm" onclick="syncFromCloud(true)">🔄 Sync Latest Results</button>
             <button class="btn btn-danger btn-sm" onclick="clearAllResults()">🗑️ Clear All Results</button>
           </div>
 
@@ -787,7 +791,7 @@
               <strong>Exam Portal Live Status</strong>
               <p style="font-size:0.78rem; color:#475569;">Turn OFF to lock the exam after class hours so trainees cannot submit from home.</p>
             </div>
-            <input type="checkbox" id="toggleExamLive" checked style="width:22px; height:22px;" onchange="savePortalSettings()" />
+            <input type="checkbox" id="toggleExamLive" checked style="width:22px; height:22px; cursor:pointer;" onchange="savePortalSettings()" />
           </div>
 
           <div class="switch-row">
@@ -795,7 +799,7 @@
               <strong>Show Answer Key After Exam Submit</strong>
               <p style="font-size:0.78rem; color:#475569;">Allow trainees to view right/wrong answers immediately after submitting.</p>
             </div>
-            <input type="checkbox" id="toggleShowKey" checked style="width:22px; height:22px;" onchange="savePortalSettings()" />
+            <input type="checkbox" id="toggleShowKey" checked style="width:22px; height:22px; cursor:pointer;" onchange="savePortalSettings()" />
           </div>
 
           <div class="grid-2" style="margin-top:14px;">
@@ -804,9 +808,14 @@
               <input type="number" id="settingDuration" value="60" min="5" max="180" onchange="savePortalSettings()" />
             </div>
             <div class="form-group">
-              <label>Firebase Realtime Database URL (Optional Cloud Sync)</label>
+              <label>Firebase Realtime Database URL (Cloud Sync)</label>
               <input type="url" id="firebaseDbUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" onchange="savePortalSettings()" />
             </div>
+          </div>
+
+          <div style="margin-top:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding-top:14px; border-top:1px solid #e2e8f0;">
+            <span id="settingsSaveFeedback" style="font-size:0.82rem; font-weight:700; color:#059669;"></span>
+            <button class="btn btn-primary" onclick="savePortalSettings(true)">💾 Save & Sync Settings to Cloud</button>
           </div>
         </div>
       </div>
@@ -884,15 +893,15 @@
     let timerInterval = null;
 
     // ==================== INITIALIZATION ====================
-    function initApp() {
+    async function initApp() {
       applySettingsToUI();
-      pushSettingsToCloud();
-      syncFromCloud();
+      // Always pull latest live settings, questions, and results from Firebase first (never overwrite on load)
+      await syncFromCloud(false);
     }
 
     function applySettingsToUI() {
-      document.getElementById("toggleExamLive").checked = portalSettings.examLive;
-      document.getElementById("toggleShowKey").checked = portalSettings.showKey;
+      document.getElementById("toggleExamLive").checked = Boolean(portalSettings.examLive);
+      document.getElementById("toggleShowKey").checked = Boolean(portalSettings.showKey);
       document.getElementById("settingDuration").value = portalSettings.duration;
       document.getElementById("firebaseDbUrl").value = portalSettings.firebaseUrl || "";
 
@@ -915,15 +924,26 @@
       }
     }
 
-    function savePortalSettings() {
+    async function savePortalSettings(showAlert = false) {
+      const fbEl = document.getElementById("settingsSaveFeedback");
       portalSettings.examLive = document.getElementById("toggleExamLive").checked;
       portalSettings.showKey = document.getElementById("toggleShowKey").checked;
       portalSettings.duration = parseInt(document.getElementById("settingDuration").value) || 60;
       portalSettings.firebaseUrl = document.getElementById("firebaseDbUrl").value.trim().replace(/\/$/, "");
       localStorage.setItem("swagat_settings_v3", JSON.stringify(portalSettings));
       applySettingsToUI();
-      pushSettingsToCloud();
-      syncFromCloud();
+
+      if (fbEl) fbEl.textContent = "Syncing to Firebase...";
+      const ok = await pushSettingsToCloud();
+      if (fbEl) {
+        fbEl.style.color = ok ? "#059669" : "#dc2626";
+        fbEl.textContent = ok
+          ? `✓ Saved & Live on Cloud (${portalSettings.examLive ? "PORTAL UNLOCKED / LIVE" : "PORTAL LOCKED"})`
+          : "⚠ Saved locally, but Firebase sync failed! Check Database Rules.";
+      }
+      if (showAlert && ok) {
+        alert(`Settings updated on Firebase! Portal is now ${portalSettings.examLive ? "LIVE (Unlocked)" : "LOCKED"}.`);
+      }
     }
 
     // ==================== CLOUD SYNC (FIREBASE REST FOR RESULTS + QUESTION BANKS + SETTINGS) ====================
@@ -947,7 +967,7 @@
           body: JSON.stringify(questionBanks)
         });
         if (!res.ok) throw new Error("HTTP " + res.status);
-        document.getElementById("syncStatusText").textContent = "CLOUD SYNCED";
+        document.getElementById("syncStatusText").textContent = "CLOUD LIVE";
       } catch (e) {
         console.error("Question Bank cloud sync failed:", e);
         alert("Warning: Questions saved on this device, but Firebase Cloud sync failed! Check Firebase Rules (.read/.write = true).");
@@ -955,38 +975,53 @@
     }
 
     async function pushSettingsToCloud() {
-      if (!portalSettings.firebaseUrl) return;
+      if (!portalSettings.firebaseUrl) return false;
       try {
-        await fetch(`${portalSettings.firebaseUrl}/cbt_portal_settings.json`, {
+        const res = await fetch(`${portalSettings.firebaseUrl}/cbt_portal_settings.json`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            examLive: portalSettings.examLive,
-            showKey: portalSettings.showKey,
-            duration: portalSettings.duration
+            examLive: Boolean(portalSettings.examLive),
+            showKey: Boolean(portalSettings.showKey),
+            duration: Number(portalSettings.duration) || 60,
+            updatedAt: Date.now()
           })
         });
-      } catch (e) { console.warn("Settings sync failed", e); }
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        document.getElementById("syncStatusText").textContent = "CLOUD LIVE";
+        return true;
+      } catch (e) {
+        console.error("Settings sync failed:", e);
+        return false;
+      }
     }
 
-    async function syncFromCloud() {
+    async function syncFromCloud(manual = false) {
       const statusEl = document.getElementById("syncStatusText");
       if (!portalSettings.firebaseUrl) {
-        statusEl.textContent = "LOCAL + READY";
+        statusEl.textContent = "LOCAL ONLY";
         return;
       }
+      if (manual) statusEl.textContent = "SYNCING...";
       try {
+        const cacheBuster = `?t=${Date.now()}`;
         const [resResults, resQB, resSet] = await Promise.all([
-          fetch(`${portalSettings.firebaseUrl}/cbt_results.json`),
-          fetch(`${portalSettings.firebaseUrl}/cbt_question_banks.json`),
-          fetch(`${portalSettings.firebaseUrl}/cbt_portal_settings.json`)
+          fetch(`${portalSettings.firebaseUrl}/cbt_results.json${cacheBuster}`, { cache: "no-store" }),
+          fetch(`${portalSettings.firebaseUrl}/cbt_question_banks.json${cacheBuster}`, { cache: "no-store" }),
+          fetch(`${portalSettings.firebaseUrl}/cbt_portal_settings.json${cacheBuster}`, { cache: "no-store" })
         ]);
 
-        const dataResults = await resResults.json();
-        if (dataResults) {
-          resultsData = Object.values(dataResults);
-          localStorage.setItem("swagat_results_v3", JSON.stringify(resultsData));
+        if (!resResults.ok || !resQB.ok || !resSet.ok) {
+          throw new Error("Firebase fetch error");
         }
+
+        const dataResults = await resResults.json();
+        if (dataResults && typeof dataResults === "object") {
+          resultsData = Object.values(dataResults);
+        } else if (dataResults === null) {
+          resultsData = [];
+        }
+        localStorage.setItem("swagat_results_v3", JSON.stringify(resultsData));
 
         const dataQB = await resQB.json();
         if (dataQB && typeof dataQB === "object") {
@@ -996,17 +1031,21 @@
 
         const dataSet = await resSet.json();
         if (dataSet && typeof dataSet === "object") {
-          if (dataSet.examLive !== undefined) portalSettings.examLive = dataSet.examLive;
-          if (dataSet.showKey !== undefined) portalSettings.showKey = dataSet.showKey;
-          if (dataSet.duration !== undefined) portalSettings.duration = dataSet.duration;
+          if (dataSet.examLive !== undefined) portalSettings.examLive = Boolean(dataSet.examLive);
+          if (dataSet.showKey !== undefined) portalSettings.showKey = Boolean(dataSet.showKey);
+          if (dataSet.duration !== undefined) portalSettings.duration = Number(dataSet.duration) || 60;
           localStorage.setItem("swagat_settings_v3", JSON.stringify(portalSettings));
           applySettingsToUI();
+        } else if (dataSet === null) {
+          // Initialize cloud settings only if node does not exist yet
+          await pushSettingsToCloud();
         }
 
         statusEl.textContent = "CLOUD LIVE";
         renderResultsTable();
         if (document.getElementById("qbListContainer")) renderQuestionList();
       } catch (e) {
+        console.warn("Cloud sync error:", e);
         statusEl.textContent = "OFFLINE MODE";
       }
     }
@@ -1017,6 +1056,9 @@
         document.getElementById(id).classList.add("hidden");
       });
       document.getElementById(viewId).classList.remove("hidden");
+      if (viewId === "studentLoginView") {
+        syncFromCloud(false);
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -1032,7 +1074,7 @@
 
     async function startExam(e) {
       e.preventDefault();
-      await syncFromCloud();
+      await syncFromCloud(false);
       if (!portalSettings.examLive) {
         alert("Exam is currently locked by the Instructor.");
         return;
@@ -1363,11 +1405,12 @@
     }
     function closePinModal() { document.getElementById("pinModal").classList.add("hidden"); }
 
-    function verifyInstructorPin() {
+    async function verifyInstructorPin() {
       const pin = document.getElementById("instructorPinInput").value;
       if (pin === INSTRUCTOR_PIN) {
         closePinModal();
         showView("instructorView");
+        await syncFromCloud(false);
         renderResultsTable();
         renderQuestionList();
       } else {
@@ -1380,6 +1423,9 @@
     function switchInstructorTab(tabId) {
       ["resultsTab", "qbankTab", "settingsTab"].forEach(id => document.getElementById(id).classList.add("hidden"));
       document.getElementById(tabId).classList.remove("hidden");
+      if (tabId === "settingsTab") {
+        document.getElementById("settingsSaveFeedback").textContent = "";
+      }
     }
 
     function getFilteredResults() {
@@ -1447,7 +1493,8 @@
       if (!list.length) { alert("No records to export."); return; }
       const headers = ["Date", "Roll No", "Trainee Name", "Trade", "Year", "Month", "Correct", "Total", "Percentage", "Status", "Warnings"];
       const rows = list.map(r => [r.date, r.roll, `"${r.name}"`, r.trade, r.year, r.month, r.correct, r.total, r.percent + "%", r.passed ? "PASS" : "FAIL", r.warnings || 0]);
-      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("
+");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1456,10 +1503,15 @@
       a.click();
     }
 
-    function clearAllResults() {
-      if (confirm("Are you sure you want to delete ALL saved results?")) {
+    async function clearAllResults() {
+      if (confirm("Are you sure you want to delete ALL saved results from this device AND Firebase Cloud?")) {
         resultsData = [];
         localStorage.setItem("swagat_results_v3", JSON.stringify([]));
+        if (portalSettings.firebaseUrl) {
+          try {
+            await fetch(`${portalSettings.firebaseUrl}/cbt_results.json`, { method: "DELETE" });
+          } catch (e) { console.warn("Cloud delete failed", e); }
+        }
         renderResultsTable();
       }
     }
@@ -1506,7 +1558,8 @@
       const raw = document.getElementById("bulkPasteBox").value.trim();
       if (!raw) return;
 
-      const lines = raw.split("\n");
+      const lines = raw.split("
+");
       const mapAns = { A: 0, B: 1, C: 2, D: 3 };
       let added = 0;
 
@@ -1537,7 +1590,8 @@
       const key = getSelectedBankKey();
       const reader = new FileReader();
       reader.onload = function(e) {
-        const lines = e.target.result.split("\n").slice(1);
+        const lines = e.target.result.split("
+").slice(1);
         let count = 0;
         lines.forEach(line => {
           const cols = line.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
