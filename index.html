@@ -843,11 +843,12 @@
     const INSTRUCTOR_PIN = "Swagat@2008";
     let questionBanks = JSON.parse(localStorage.getItem("swagat_qb_v3")) || DEFAULT_QUESTIONS;
     let resultsData = JSON.parse(localStorage.getItem("swagat_results_v3")) || [];
-    let portalSettings = JSON.parse(localStorage.getItem("swagat_settings_v3")) || {
-      examLive: true,
-      showKey: true,
-      duration: 60,
-      firebaseUrl: ""
+    let savedSettings = JSON.parse(localStorage.getItem("swagat_settings_v3")) || {};
+    let portalSettings = {
+      examLive: savedSettings.examLive !== undefined ? savedSettings.examLive : true,
+      showKey: savedSettings.showKey !== undefined ? savedSettings.showKey : true,
+      duration: savedSettings.duration || 60,
+      firebaseUrl: savedSettings.firebaseUrl || "https://swagat-cbt-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
 
     let currentExam = null;
