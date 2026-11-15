@@ -612,11 +612,9 @@
       alert("No records to export.");
       return;
     }
-    let csv = "Date,Roll No,Trainee Name,Trade,Year,Unit,Month,Score,Total,Percentage,Status
-";
+    let csv = "Date,Roll No,Trainee Name,Trade,Year,Unit,Month,Score,Total,Percentage,Status\n";
     rows.forEach(r => {
-      csv += `"${r.date}","${r.roll}","${r.name}","${r.trade}","${r.year}","${r.unit}","${r.month}",${r.score},${r.total},${r.percent}%,${r.status}
-`;
+      csv += `"${r.date}","${r.roll}","${r.name}","${r.trade}","${r.year}","${r.unit}","${r.month}",${r.score},${r.total},${r.percent}%,${r.status}\n`;
     });
     const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a");
