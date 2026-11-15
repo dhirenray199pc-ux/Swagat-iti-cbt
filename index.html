@@ -895,7 +895,6 @@
     // ==================== INITIALIZATION ====================
     async function initApp() {
       applySettingsToUI();
-      // Always pull latest live settings, questions, and results from Firebase first (never overwrite on load)
       await syncFromCloud(false);
     }
 
@@ -1037,7 +1036,6 @@
           localStorage.setItem("swagat_settings_v3", JSON.stringify(portalSettings));
           applySettingsToUI();
         } else if (dataSet === null) {
-          // Initialize cloud settings only if node does not exist yet
           await pushSettingsToCloud();
         }
 
@@ -1094,7 +1092,6 @@
         return;
       }
 
-      // Shuffle questions and shuffle options per question
       const shuffledQs = shuffleArray(rawBank).map((q, idx) => {
         const indexedOpts = q.opts.map((text, i) => ({ text, isCorrect: i === q.ans }));
         const mixedOpts = shuffleArray(indexedOpts);
@@ -1355,7 +1352,6 @@
         : `<span style="color:#dc2626;">FAIL</span>`;
       document.getElementById("resWarnings").textContent = rec.warnings || 0;
 
-      // Subject Breakdown
       const tbody = document.getElementById("subjectBreakdownBody");
       tbody.innerHTML = "";
       Object.entries(rec.subStats || {}).forEach(([sub, st]) => {
@@ -1372,7 +1368,6 @@
         `;
       });
 
-      // Answer Key Review
       const keySec = document.getElementById("answerKeySection");
       const keyList = document.getElementById("answerKeyList");
       keyList.innerHTML = "";
@@ -1493,8 +1488,7 @@
       if (!list.length) { alert("No records to export."); return; }
       const headers = ["Date", "Roll No", "Trainee Name", "Trade", "Year", "Month", "Correct", "Total", "Percentage", "Status", "Warnings"];
       const rows = list.map(r => [r.date, r.roll, `"${r.name}"`, r.trade, r.year, r.month, r.correct, r.total, r.percent + "%", r.passed ? "PASS" : "FAIL", r.warnings || 0]);
-      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("
-");
+      const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("\\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1558,8 +1552,7 @@
       const raw = document.getElementById("bulkPasteBox").value.trim();
       if (!raw) return;
 
-      const lines = raw.split("
-");
+      const lines = raw.split("\\n");
       const mapAns = { A: 0, B: 1, C: 2, D: 3 };
       let added = 0;
 
@@ -1590,8 +1583,7 @@
       const key = getSelectedBankKey();
       const reader = new FileReader();
       reader.onload = function(e) {
-        const lines = e.target.result.split("
-").slice(1);
+        const lines = e.target.result.split("\\n").slice(1);
         let count = 0;
         lines.forEach(line => {
           const cols = line.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
